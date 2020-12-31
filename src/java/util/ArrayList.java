@@ -131,7 +131,7 @@ public class ArrayList<E> extends AbstractList<E>
      * empty ArrayList with elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
      * will be expanded to DEFAULT_CAPACITY when the first element is added.
      */
-    transient Object[] elementData; // non-private to simplify nested class access
+    transient Object[] elementData; // non-private to simplify nested class access//实际数据使用该数组进程保存
 
     /**
      * The size of the ArrayList (the number of elements it contains).
@@ -149,9 +149,9 @@ public class ArrayList<E> extends AbstractList<E>
      */
     public ArrayList(int initialCapacity) {
         if (initialCapacity > 0) {
-            this.elementData = new Object[initialCapacity];
+            this.elementData = new Object[initialCapacity];//initcapacity不为0时初始化elementData
         } else if (initialCapacity == 0) {
-            this.elementData = EMPTY_ELEMENTDATA;
+            this.elementData = EMPTY_ELEMENTDATA;//让elementData引用空的数组EMPTY_ELEMENTDATA
         } else {
             throw new IllegalArgumentException("Illegal Capacity: "+
                                                initialCapacity);
@@ -162,7 +162,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Constructs an empty list with an initial capacity of ten.
      */
     public ArrayList() {
-        this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
+        this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;//默认初始化时将一个默认空数组赋值给elementData数组，此时数组长度为0
     }
 
     /**
@@ -190,12 +190,12 @@ public class ArrayList<E> extends AbstractList<E>
      * list's current size.  An application can use this operation to minimize
      * the storage of an <tt>ArrayList</tt> instance.
      */
-    public void trimToSize() {
+    public void trimToSize() {//调整容器大小为当前元素所占用的大小
         modCount++;
         if (size < elementData.length) {
             elementData = (size == 0)
               ? EMPTY_ELEMENTDATA
-              : Arrays.copyOf(elementData, size);
+              : Arrays.copyOf(elementData, size);//将存储元素的数组重新赋值为容量大小为实际容量大小的数组（如17）
         }
     }
 
@@ -219,20 +219,20 @@ public class ArrayList<E> extends AbstractList<E>
         }
     }
 
-    private void ensureCapacityInternal(int minCapacity) {
+    private void ensureCapacityInternal(int minCapacity) {//确定是否需要扩容
         if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
             minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
         }
 
-        ensureExplicitCapacity(minCapacity);
+        ensureExplicitCapacity(minCapacity);//确定是否需要扩容
     }
 
-    private void ensureExplicitCapacity(int minCapacity) {
-        modCount++;
+    private void ensureExplicitCapacity(int minCapacity) {//确定容量
+        modCount++;//容量大小标记位+1
 
         // overflow-conscious code
         if (minCapacity - elementData.length > 0)
-            grow(minCapacity);
+            grow(minCapacity);//扩容原理
     }
 
     /**
@@ -252,13 +252,13 @@ public class ArrayList<E> extends AbstractList<E>
     private void grow(int minCapacity) {
         // overflow-conscious code
         int oldCapacity = elementData.length;
-        int newCapacity = oldCapacity + (oldCapacity >> 1);
-        if (newCapacity - minCapacity < 0)
-            newCapacity = minCapacity;
+        int newCapacity = oldCapacity + (oldCapacity >> 1);//newCapacity = 1.5 * oldCapacity
+        if (newCapacity - minCapacity < 0) //是判断是否真的需要扩容（当前集合容量的1.5倍 > 最小容量（初始10））
+            newCapacity = minCapacity;//如果新容量大小<最小容量10，就进行不需要扩容，但是还是会进行下面的拷贝操作
         if (newCapacity - MAX_ARRAY_SIZE > 0)
             newCapacity = hugeCapacity(minCapacity);
         // minCapacity is usually close to size, so this is a win:
-        elementData = Arrays.copyOf(elementData, newCapacity);
+        elementData = Arrays.copyOf(elementData, newCapacity);//将元素数组通过拷贝操作进行重新赋值
     }
 
     private static int hugeCapacity(int minCapacity) {
@@ -313,7 +313,7 @@ public class ArrayList<E> extends AbstractList<E>
                 if (elementData[i]==null)
                     return i;
         } else {
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < size; i++)  //遍历比较
                 if (o.equals(elementData[i]))
                     return i;
         }
@@ -426,7 +426,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E get(int index) {
-        rangeCheck(index);
+        rangeCheck(index);  //校验下标合法性
 
         return elementData(index);
     }
@@ -455,8 +455,8 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> (as specified by {@link Collection#add})
      */
     public boolean add(E e) {
-        ensureCapacityInternal(size + 1);  // Increments modCount!!
-        elementData[size++] = e;
+        ensureCapacityInternal(size + 1);  // Increments modCount!!//传入最小的容量=1+size（第一次add时size=0）
+        elementData[size++] = e;//将数据保存到对象数组中
         return true;
     }
 
@@ -470,11 +470,11 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public void add(int index, E element) {
-        rangeCheckForAdd(index);
+        rangeCheckForAdd(index);//检查下标是否合法
 
         ensureCapacityInternal(size + 1);  // Increments modCount!!
         System.arraycopy(elementData, index, elementData, index + 1,
-                         size - index);
+                         size - index);//数组拷贝操作
         elementData[index] = element;
         size++;
     }
@@ -489,16 +489,16 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E remove(int index) {
-        rangeCheck(index);
+        rangeCheck(index);//判断下标合法性
 
         modCount++;
-        E oldValue = elementData(index);
+        E oldValue = elementData(index);//暂存改下表下的元素，用于返回值
 
-        int numMoved = size - index - 1;
+        int numMoved = size - index - 1;//确定需要移动的元素个数，也就是从下标处后面需要移动的元素
         if (numMoved > 0)
             System.arraycopy(elementData, index+1, elementData, index,
-                             numMoved);
-        elementData[--size] = null; // clear to let GC do its work
+                             numMoved);//通过数组拷贝的方法，将下标出元素移动到最后一位
+        elementData[--size] = null; // clear to let GC do its work//把移动过后的最后一个下标位置置为null
 
         return oldValue;
     }
@@ -524,8 +524,8 @@ public class ArrayList<E> extends AbstractList<E>
                     return true;
                 }
         } else {
-            for (int index = 0; index < size; index++)
-                if (o.equals(elementData[index])) {
+            for (int index = 0; index < size; index++)  //遍历集合
+                if (o.equals(elementData[index])) { //将该元素与集合中的元素进行比对
                     fastRemove(index);
                     return true;
                 }
@@ -537,7 +537,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Private remove method that skips bounds checking and does not
      * return the value removed.
      */
-    private void fastRemove(int index) {
+    private void fastRemove(int index) {    //快速移除，就是跳过对下标进行检查，前提是调用方确保被删除元素确实存在
         modCount++;
         int numMoved = size - index - 1;
         if (numMoved > 0)
@@ -554,7 +554,7 @@ public class ArrayList<E> extends AbstractList<E>
         modCount++;
 
         // clear to let GC do its work
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++)//遍历集合，将每个下标置为null
             elementData[i] = null;
 
         size = 0;
@@ -574,10 +574,10 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws NullPointerException if the specified collection is null
      */
     public boolean addAll(Collection<? extends E> c) {
-        Object[] a = c.toArray();
-        int numNew = a.length;
-        ensureCapacityInternal(size + numNew);  // Increments modCount
-        System.arraycopy(a, 0, elementData, size, numNew);
+        Object[] a = c.toArray();//首先将传入的结合转为数组
+        int numNew = a.length;//获取数组长度
+        ensureCapacityInternal(size + numNew);  // Increments modCount  //确定是否扩容
+        System.arraycopy(a, 0, elementData, size, numNew);//进行拷贝操作
         size += numNew;
         return numNew != 0;
     }
