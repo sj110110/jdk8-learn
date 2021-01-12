@@ -134,7 +134,7 @@ public final class Class<T> implements java.io.Serializable,
      * This constructor is not used and prevents the default constructor being
      * generated.
      */
-    private Class(ClassLoader loader) {
+    private Class(ClassLoader loader) {//似有构造方法，只有JVM虚拟机能够可以创建Class对象
         // Initialize final field for classLoader.  The initialization value of non-null
         // prevents future JIT optimizations from assuming this final field is null.
         classLoader = loader;
@@ -259,8 +259,8 @@ public final class Class<T> implements java.io.Serializable,
      */
     @CallerSensitive
     public static Class<?> forName(String className)
-                throws ClassNotFoundException {
-        Class<?> caller = Reflection.getCallerClass();
+                throws ClassNotFoundException {     //根据类的全限定名获取该类的Class对象
+        Class<?> caller = Reflection.getCallerClass();  //获取调用类
         return forName0(className, true, ClassLoader.getClassLoader(caller), caller);
     }
 
@@ -332,20 +332,20 @@ public final class Class<T> implements java.io.Serializable,
         throws ClassNotFoundException
     {
         Class<?> caller = null;
-        SecurityManager sm = System.getSecurityManager();
+        SecurityManager sm = System.getSecurityManager();//获取安全管理器
         if (sm != null) {
             // Reflective call to get caller class is only needed if a security manager
             // is present.  Avoid the overhead of making this call otherwise.
-            caller = Reflection.getCallerClass();
-            if (sun.misc.VM.isSystemDomainLoader(loader)) {
-                ClassLoader ccl = ClassLoader.getClassLoader(caller);
-                if (!sun.misc.VM.isSystemDomainLoader(ccl)) {
+            caller = Reflection.getCallerClass();   //获取调用类
+            if (sun.misc.VM.isSystemDomainLoader(loader)) { //判断传入的类加载器是否为空
+                ClassLoader ccl = ClassLoader.getClassLoader(caller);   //获取调用类的类加载器
+                if (!sun.misc.VM.isSystemDomainLoader(ccl)) {   //如果没有获取到
                     sm.checkPermission(
-                        SecurityConstants.GET_CLASSLOADER_PERMISSION);
+                        SecurityConstants.GET_CLASSLOADER_PERMISSION);  //使用安全管理器校验是否有权限获取类加载器
                 }
             }
         }
-        return forName0(name, initialize, loader, caller);
+        return forName0(name, initialize, loader, caller); //最终调用forName0这个本地方法根据类的权限定名、类加载器完成类的加载。
     }
 
     /** Called after security check for system loader access checks have been made. */
@@ -392,24 +392,24 @@ public final class Class<T> implements java.io.Serializable,
     @CallerSensitive
     public T newInstance()
         throws InstantiationException, IllegalAccessException
-    {
-        if (System.getSecurityManager() != null) {
-            checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), false);
+    {   //可以通过Class对象来获取某个类的实例对象
+        if (System.getSecurityManager() != null) {  //安全管理器不为空
+            checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), false);//检查客户端是否有成员的访问权限
         }
 
         // NOTE: the following code may not be strictly correct under
         // the current Java memory model.
 
         // Constructor lookup
-        if (cachedConstructor == null) {
+        if (cachedConstructor == null) {    //检查是否还存过构造器
             if (this == Class.class) {
-                throw new IllegalAccessException(
+                throw new IllegalAccessException(   //不能使用该方法生成Class类的实例
                     "Can not call newInstance() on the Class for java.lang.Class"
                 );
             }
             try {
                 Class<?>[] empty = {};
-                final Constructor<T> c = getConstructor0(empty, Member.DECLARED);
+                final Constructor<T> c = getConstructor0(empty, Member.DECLARED);//获取已经声明的无参构造器
                 // Disable accessibility checks on the constructor
                 // since we have to do the security check here anyway
                 // (the stack depth is wrong for the Constructor's
@@ -417,29 +417,29 @@ public final class Class<T> implements java.io.Serializable,
                 java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedAction<Void>() {
                         public Void run() {
-                                c.setAccessible(true);
+                                c.setAccessible(true);  //设置无参构造器的可访问权限，针对private
                                 return null;
                             }
                         });
-                cachedConstructor = c;
+                cachedConstructor = c;//将构造器对象放入缓存中
             } catch (NoSuchMethodException e) {
                 throw (InstantiationException)
                     new InstantiationException(getName()).initCause(e);
             }
         }
-        Constructor<T> tmpConstructor = cachedConstructor;
+        Constructor<T> tmpConstructor = cachedConstructor;//获取构造器对象临时引用
         // Security check (same as in java.lang.reflect.Constructor)
-        int modifiers = tmpConstructor.getModifiers();
-        if (!Reflection.quickCheckMemberAccess(this, modifiers)) {
-            Class<?> caller = Reflection.getCallerClass();
-            if (newInstanceCallerCache != caller) {
-                Reflection.ensureMemberAccess(caller, this, null, modifiers);
+        int modifiers = tmpConstructor.getModifiers();// 获取构造方法的语言描述符：public、private、static、final等
+        if (!Reflection.quickCheckMemberAccess(this, modifiers)) {//根据语言描述符判断是否具有访问权限
+            Class<?> caller = Reflection.getCallerClass();  //获取调用者类
+            if (newInstanceCallerCache != caller) { //之前缓存的调用者类与之对比
+                Reflection.ensureMemberAccess(caller, this, null, modifiers);   //如果不是之前的，需要重新确保调用者类可以访问无参构造方法。
                 newInstanceCallerCache = caller;
             }
         }
         // Run constructor
         try {
-            return tmpConstructor.newInstance((Object[])null);
+            return tmpConstructor.newInstance((Object[])null);  //调用类的构造方法来生成实例
         } catch (InvocationTargetException e) {
             Unsafe.getUnsafe().throwException(e.getTargetException());
             // Not reached
@@ -480,7 +480,7 @@ public final class Class<T> implements java.io.Serializable,
      *
      * @since JDK1.1
      */
-    public native boolean isInstance(Object obj);
+    public native boolean isInstance(Object obj);   //本地方法判断对象实例的Class类型
 
 
     /**
@@ -1911,7 +1911,7 @@ public final class Class<T> implements java.io.Serializable,
      * @jls 8.3 Field Declarations
      */
     @CallerSensitive
-    public Field[] getDeclaredFields() throws SecurityException {
+    public Field[] getDeclaredFields() throws SecurityException {   //获取类的成员变量
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyFields(privateGetDeclaredFields(false));
     }
@@ -2123,9 +2123,9 @@ public final class Class<T> implements java.io.Serializable,
      */
     @CallerSensitive
     public Method getDeclaredMethod(String name, Class<?>... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
+        throws NoSuchMethodException, SecurityException {   //根据名称和参数列表获取方法数据
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
-        Method method = searchMethods(privateGetDeclaredMethods(false), name, parameterTypes);
+        Method method = searchMethods(privateGetDeclaredMethods(false), name, parameterTypes);//遍历查询
         if (method == null) {
             throw new NoSuchMethodException(getName() + "." + name + argumentTypesToString(parameterTypes));
         }
@@ -2333,22 +2333,22 @@ public final class Class<T> implements java.io.Serializable,
      * <p> Default policy: allow all clients access with normal Java access
      * control.
      */
-    private void checkMemberAccess(int which, Class<?> caller, boolean checkProxyInterfaces) {
-        final SecurityManager s = System.getSecurityManager();
+    private void checkMemberAccess(int which, Class<?> caller, boolean checkProxyInterfaces) {  //设置成员的访问权限
+        final SecurityManager s = System.getSecurityManager();  //获取安全管理器
         if (s != null) {
             /* Default policy allows access to all {@link Member#PUBLIC} members,
              * as well as access to classes that have the same class loader as the caller.
              * In all other cases, it requires RuntimePermission("accessDeclaredMembers")
              * permission.
              */
-            final ClassLoader ccl = ClassLoader.getClassLoader(caller);
+            final ClassLoader ccl = ClassLoader.getClassLoader(caller);//获取调用类的类加载器
             final ClassLoader cl = getClassLoader0();
-            if (which != Member.PUBLIC) {
+            if (which != Member.PUBLIC) {   //如果不是public公共的访问标识符
                 if (ccl != cl) {
-                    s.checkPermission(SecurityConstants.CHECK_MEMBER_ACCESS_PERMISSION);
+                    s.checkPermission(SecurityConstants.CHECK_MEMBER_ACCESS_PERMISSION);    //设置权限
                 }
             }
-            this.checkPackageAccess(ccl, checkProxyInterfaces);
+            this.checkPackageAccess(ccl, checkProxyInterfaces); //设置包的访问权限
         }
     }
 
@@ -2458,59 +2458,59 @@ public final class Class<T> implements java.io.Serializable,
      */
 
     // Caches for certain reflective results
-    private static boolean useCaches = true;
+    private static boolean useCaches = true;    //是否启用缓存
 
     // reflection data that might get invalidated when JVM TI RedefineClasses() is called
-    private static class ReflectionData<T> {
-        volatile Field[] declaredFields;
-        volatile Field[] publicFields;
-        volatile Method[] declaredMethods;
-        volatile Method[] publicMethods;
-        volatile Constructor<T>[] declaredConstructors;
-        volatile Constructor<T>[] publicConstructors;
+    private static class ReflectionData<T> {    //Class中的内部类，用来存放反射数据作为缓存
+        volatile Field[] declaredFields;    //属性
+        volatile Field[] publicFields;  //公共属性
+        volatile Method[] declaredMethods;  //方法
+        volatile Method[] publicMethods;    //公共方法
+        volatile Constructor<T>[] declaredConstructors; //构造函数
+        volatile Constructor<T>[] publicConstructors;   //公共构造函数
         // Intermediate results for getFields and getMethods
         volatile Field[] declaredPublicFields;
         volatile Method[] declaredPublicMethods;
-        volatile Class<?>[] interfaces;
+        volatile Class<?>[] interfaces; //接口
 
         // Value of classRedefinedCount when we created this ReflectionData instance
         final int redefinedCount;
 
         ReflectionData(int redefinedCount) {
-            this.redefinedCount = redefinedCount;
+            this.redefinedCount = redefinedCount;//创建缓存对象ReflectionData时设置redefinedCount值
         }
     }
 
-    private volatile transient SoftReference<ReflectionData<T>> reflectionData;
+    private volatile transient SoftReference<ReflectionData<T>> reflectionData;//软引用
 
     // Incremented by the VM on each call to JVM TI RedefineClasses()
     // that redefines this class or a superclass.
     private volatile transient int classRedefinedCount = 0;
 
     // Lazily create and cache ReflectionData
-    private ReflectionData<T> reflectionData() {
-        SoftReference<ReflectionData<T>> reflectionData = this.reflectionData;
-        int classRedefinedCount = this.classRedefinedCount;
+    private ReflectionData<T> reflectionData() {        //惰性创建和缓存反射的数据
+        SoftReference<ReflectionData<T>> reflectionData = this.reflectionData;  //使用软引用的方式来创建ReflectionData对象 //软引用：内存不足时会回收此对象
+        int classRedefinedCount = this.classRedefinedCount; //设置重新定义的次数
         ReflectionData<T> rd;
-        if (useCaches &&
-            reflectionData != null &&
-            (rd = reflectionData.get()) != null &&
-            rd.redefinedCount == classRedefinedCount) {
+        if (useCaches &&                                    //启用缓存
+            reflectionData != null &&                       //软引用不为空
+            (rd = reflectionData.get()) != null &&          //ReflectionData对象不为空
+            rd.redefinedCount == classRedefinedCount) {     //redefinedCount值等于classRedefinedCount
             return rd;
         }
         // else no SoftReference or cleared SoftReference or stale ReflectionData
         // -> create and replace new instance
-        return newReflectionData(reflectionData, classRedefinedCount);
+        return newReflectionData(reflectionData, classRedefinedCount);//否则新建缓存
     }
 
     private ReflectionData<T> newReflectionData(SoftReference<ReflectionData<T>> oldReflectionData,
                                                 int classRedefinedCount) {
-        if (!useCaches) return null;
+        if (!useCaches) return null;    //不启用缓存则直接返回null
 
         while (true) {
-            ReflectionData<T> rd = new ReflectionData<>(classRedefinedCount);
+            ReflectionData<T> rd = new ReflectionData<>(classRedefinedCount);   //新建缓存对象ReflectionData
             // try to CAS it...
-            if (Atomic.casReflectionData(this, oldReflectionData, new SoftReference<>(rd))) {
+            if (Atomic.casReflectionData(this, oldReflectionData, new SoftReference<>(rd))) {   //通过cas操作修改缓存数据
                 return rd;
             }
             // else retry
@@ -2518,7 +2518,7 @@ public final class Class<T> implements java.io.Serializable,
             classRedefinedCount = this.classRedefinedCount;
             if (oldReflectionData != null &&
                 (rd = oldReflectionData.get()) != null &&
-                rd.redefinedCount == classRedefinedCount) {
+                rd.redefinedCount == classRedefinedCount) {     //这里主要考虑可能这个缓存数据被其他线程修改，并返回了有效数据
                 return rd;
             }
         }
@@ -2571,17 +2571,17 @@ public final class Class<T> implements java.io.Serializable,
     // Returns an array of "root" fields. These Field objects must NOT
     // be propagated to the outside world, but must instead be copied
     // via ReflectionFactory.copyField.
-    private Field[] privateGetDeclaredFields(boolean publicOnly) {
+    private Field[] privateGetDeclaredFields(boolean publicOnly) { //获取类的属性
         checkInitted();
         Field[] res;
-        ReflectionData<T> rd = reflectionData();
-        if (rd != null) {
-            res = publicOnly ? rd.declaredPublicFields : rd.declaredFields;
+        ReflectionData<T> rd = reflectionData();//读取reflectData缓存数据，如果还没有缓存则创建
+        if (rd != null) {   //缓存不为空
+            res = publicOnly ? rd.declaredPublicFields : rd.declaredFields; //返回缓存中已有的属性
             if (res != null) return res;
         }
         // No cached value available; request value from VM
-        res = Reflection.filterFields(this, getDeclaredFields0(publicOnly));
-        if (rd != null) {
+        res = Reflection.filterFields(this, getDeclaredFields0(publicOnly));    //如果没有有效的缓存数据，需要从虚拟机中获取属性数据，调用本地方法getDeclaredFields0（）
+        if (rd != null) {   //根据是否public返回对应的属性数据
             if (publicOnly) {
                 rd.declaredPublicFields = res;
             } else {
@@ -2654,7 +2654,7 @@ public final class Class<T> implements java.io.Serializable,
     // Returns an array of "root" constructors. These Constructor
     // objects must NOT be propagated to the outside world, but must
     // instead be copied via ReflectionFactory.copyConstructor.
-    private Constructor<T>[] privateGetDeclaredConstructors(boolean publicOnly) {
+    private Constructor<T>[] privateGetDeclaredConstructors(boolean publicOnly) {   //获取构造方法(有参和无参)
         checkInitted();
         Constructor<T>[] res;
         ReflectionData<T> rd = reflectionData();
@@ -2663,12 +2663,12 @@ public final class Class<T> implements java.io.Serializable,
             if (res != null) return res;
         }
         // No cached value available; request value from VM
-        if (isInterface()) {
+        if (isInterface()) {    //判断是接口
             @SuppressWarnings("unchecked")
             Constructor<T>[] temporaryRes = (Constructor<T>[]) new Constructor<?>[0];
-            res = temporaryRes;
+            res = temporaryRes; //返回空的构造器数组，接口没有构造器
         } else {
-            res = getDeclaredConstructors0(publicOnly);
+            res = getDeclaredConstructors0(publicOnly);//通过虚拟机获取构造器
         }
         if (rd != null) {
             if (publicOnly) {
@@ -2689,20 +2689,20 @@ public final class Class<T> implements java.io.Serializable,
     // Returns an array of "root" methods. These Method objects must NOT
     // be propagated to the outside world, but must instead be copied
     // via ReflectionFactory.copyMethod.
-    private Method[] privateGetDeclaredMethods(boolean publicOnly) {
+    private Method[] privateGetDeclaredMethods(boolean publicOnly) {    //获取类中声明的方法
         checkInitted();
         Method[] res;
-        ReflectionData<T> rd = reflectionData();
+        ReflectionData<T> rd = reflectionData();    //先尝试从缓存中获取
         if (rd != null) {
             res = publicOnly ? rd.declaredPublicMethods : rd.declaredMethods;
             if (res != null) return res;
         }
         // No cached value available; request value from VM
-        res = Reflection.filterMethods(this, getDeclaredMethods0(publicOnly));
+        res = Reflection.filterMethods(this, getDeclaredMethods0(publicOnly));  //通过虚拟机获取的方法数据(调用本地方法获取)
         if (rd != null) {
-            if (publicOnly) {
+            if (publicOnly) {   //只获取public方法
                 rd.declaredPublicMethods = res;
-            } else {
+            } else {    //否则非public方法
                 rd.declaredMethods = res;
             }
         }
@@ -2886,7 +2886,7 @@ public final class Class<T> implements java.io.Serializable,
     // Returns an array of "root" methods. These Method objects must NOT
     // be propagated to the outside world, but must instead be copied
     // via ReflectionFactory.copyMethod.
-    private Method[] privateGetPublicMethods() {
+    private Method[] privateGetPublicMethods() {    //获取public公共方法
         checkInitted();
         Method[] res;
         ReflectionData<T> rd = reflectionData();
@@ -2899,30 +2899,30 @@ public final class Class<T> implements java.io.Serializable,
         // Start by fetching public declared methods
         MethodArray methods = new MethodArray();
         {
-            Method[] tmp = privateGetDeclaredMethods(true);
-            methods.addAll(tmp);
+            Method[] tmp = privateGetDeclaredMethods(true); //获取所有的public方法
+            methods.addAll(tmp);    //将方法暂存
         }
         // Now recur over superclass and direct superinterfaces.
         // Go over superinterfaces first so we can more easily filter
         // out concrete implementations inherited from superclasses at
         // the end.
         MethodArray inheritedMethods = new MethodArray();
-        for (Class<?> i : getInterfaces()) {
-            inheritedMethods.addInterfaceMethods(i.privateGetPublicMethods());
+        for (Class<?> i : getInterfaces()) {    //遍历接口
+            inheritedMethods.addInterfaceMethods(i.privateGetPublicMethods());//将接口中的所有public方法暂存
         }
-        if (!isInterface()) {
-            Class<?> c = getSuperclass();
+        if (!isInterface()) {//本地方法，判断是否是接口
+            Class<?> c = getSuperclass();//若不是接口，获取父类
             if (c != null) {
                 MethodArray supers = new MethodArray();
-                supers.addAll(c.privateGetPublicMethods());
+                supers.addAll(c.privateGetPublicMethods());//获取父类的public方法暂存
                 // Filter out concrete implementations of any
                 // interface methods
-                for (int i = 0; i < supers.length(); i++) {
+                for (int i = 0; i < supers.length(); i++) { //过滤父类方法
                     Method m = supers.get(i);
                     if (m != null &&
-                            !Modifier.isAbstract(m.getModifiers()) &&
-                            !m.isDefault()) {
-                        inheritedMethods.removeByNameAndDescriptor(m);
+                            !Modifier.isAbstract(m.getModifiers()) &&   //java修饰符是否为abstract
+                            !m.isDefault()) {   //接口中的方法默认访问修饰符 public abstract static，这里也就是判断是否为接口方法
+                        inheritedMethods.removeByNameAndDescriptor(m);  //
                     }
                 }
                 // Insert superclass's inherited methods before
@@ -2937,7 +2937,7 @@ public final class Class<T> implements java.io.Serializable,
             Method m = methods.get(i);
             inheritedMethods.removeByNameAndDescriptor(m);
         }
-        methods.addAllIfNotPresent(inheritedMethods);
+        methods.addAllIfNotPresent(inheritedMethods);//添加方法
         methods.removeLessSpecifics();
         methods.compactAndTrim();
         res = methods.getArray();
@@ -2952,7 +2952,7 @@ public final class Class<T> implements java.io.Serializable,
     // Helpers for fetchers of one field, method, or constructor
     //
 
-    private static Field searchFields(Field[] fields, String name) {
+    private static Field searchFields(Field[] fields, String name) {    //遍历属性对象数组，获取指定名称的属性
         String internedName = name.intern();
         for (int i = 0; i < fields.length; i++) {
             if (fields[i].getName() == internedName) {
@@ -2972,11 +2972,11 @@ public final class Class<T> implements java.io.Serializable,
         // class which is being queried.
         Field res;
         // Search declared public fields
-        if ((res = searchFields(privateGetDeclaredFields(true), name)) != null) {
+        if ((res = searchFields(privateGetDeclaredFields(true), name)) != null) {//获取指定name的公共属性
             return res;
         }
         // Direct superinterfaces, recursively
-        Class<?>[] interfaces = getInterfaces();
+        Class<?>[] interfaces = getInterfaces();//
         for (int i = 0; i < interfaces.length; i++) {
             Class<?> c = interfaces[i];
             if ((res = c.getField0(name)) != null) {
@@ -2998,13 +2998,13 @@ public final class Class<T> implements java.io.Serializable,
     private static Method searchMethods(Method[] methods,
                                         String name,
                                         Class<?>[] parameterTypes)
-    {
+    {   //根据方法名和参数类型获取方法对象
         Method res = null;
         String internedName = name.intern();
-        for (int i = 0; i < methods.length; i++) {
+        for (int i = 0; i < methods.length; i++) {//遍历方法数据数组
             Method m = methods[i];
             if (m.getName() == internedName
-                && arrayContentsEq(parameterTypes, m.getParameterTypes())
+                && arrayContentsEq(parameterTypes, m.getParameterTypes())   //方法名匹配，参数类型也匹配 ,区分一个方法是否重复就是看方法名和参数列表
                 && (res == null
                     || res.getReturnType().isAssignableFrom(m.getReturnType())))
                 res = m;
@@ -3072,10 +3072,10 @@ public final class Class<T> implements java.io.Serializable,
     private Constructor<T> getConstructor0(Class<?>[] parameterTypes,
                                         int which) throws NoSuchMethodException
     {
-        Constructor<T>[] constructors = privateGetDeclaredConstructors((which == Member.PUBLIC));
-        for (Constructor<T> constructor : constructors) {
+        Constructor<T>[] constructors = privateGetDeclaredConstructors((which == Member.PUBLIC));//获取构造器 TODO
+        for (Constructor<T> constructor : constructors) {//遍历构造器
             if (arrayContentsEq(parameterTypes,
-                                constructor.getParameterTypes())) {
+                                constructor.getParameterTypes())) {//匹配无参构造器
                 return getReflectionFactory().copyConstructor(constructor);
             }
         }
@@ -3117,9 +3117,9 @@ public final class Class<T> implements java.io.Serializable,
         return out;
     }
 
-    private static Method[] copyMethods(Method[] arg) {
+    private static Method[] copyMethods(Method[] arg) { //拷贝方法
         Method[] out = new Method[arg.length];
-        ReflectionFactory fact = getReflectionFactory();
+        ReflectionFactory fact = getReflectionFactory();    //使用反射工厂拷贝方法
         for (int i = 0; i < arg.length; i++) {
             out[i] = fact.copyMethod(arg[i]);
         }
@@ -3252,7 +3252,7 @@ public final class Class<T> implements java.io.Serializable,
 
     // To be able to query system properties as soon as they're available
     private static boolean initted = false;
-    private static void checkInitted() {
+    private static void checkInitted() {    //系统内部完成初始化
         if (initted) return;
         AccessController.doPrivileged(new PrivilegedAction<Void>() {
                 public Void run() {
