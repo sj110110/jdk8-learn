@@ -60,38 +60,38 @@ import sun.reflect.annotation.TypeAnnotationParser;
  * @author Nakul Saraiya
  */
 public final
-class Field extends AccessibleObject implements Member {
+class Field extends AccessibleObject implements Member {    //AccessibleObject时Field、Method、Constructor的基类
 
     private Class<?>            clazz;
     private int                 slot;
     // This is guaranteed to be interned by the VM in the 1.4
     // reflection implementation
-    private String              name;
-    private Class<?>            type;
-    private int                 modifiers;
+    private String              name;   //字段名称
+    private Class<?>            type;   //属性的Class类型
+    private int                 modifiers;  //语言描述符 ：abstract、static、private、public、final、synchronized等
     // Generics and annotations support
-    private transient String    signature;
+    private transient String    signature;  //泛型，被transient修饰的字段在序列化时将不会被纳入
     // generic info repository; lazily initialized
-    private transient FieldRepository genericInfo;
-    private byte[]              annotations;
+    private transient FieldRepository genericInfo;  //泛型类型存储库 TODO ?
+    private byte[]              annotations;    //注释
     // Cached field accessor created without override
-    private FieldAccessor fieldAccessor;
+    private FieldAccessor fieldAccessor;    // TODO
     // Cached field accessor created with override
-    private FieldAccessor overrideFieldAccessor;
+    private FieldAccessor overrideFieldAccessor;    // TODO
     // For sharing of FieldAccessors. This branching structure is
     // currently only two levels deep (i.e., one root Field and
     // potentially many Field objects pointing to it.)
     //
     // If this branching structure would ever contain cycles, deadlocks can
     // occur in annotation code.
-    private Field               root;
+    private Field               root;   //用于共享字段访问器
 
     // Generics infrastructure
 
-    private String getGenericSignature() {return signature;}
+    private String getGenericSignature() {return signature;} //获取声明类型泛型
 
     // Accessor for factory
-    private GenericsFactory getFactory() {
+    private GenericsFactory getFactory() {  //访问器工厂 ,泛型工厂
         Class<?> c = getDeclaringClass();
         // create scope and factory
         return CoreReflectionFactory.make(c, ClassScope.make(c));
@@ -160,7 +160,7 @@ class Field extends AccessibleObject implements Member {
      * Returns the {@code Class} object representing the class or interface
      * that declares the field represented by this {@code Field} object.
      */
-    public Class<?> getDeclaringClass() {
+    public Class<?> getDeclaringClass() {   //返回该字段对象所表示的字段的类或者接口的Class对象，也就是字段的所属类的Class
         return clazz;
     }
 
@@ -178,7 +178,7 @@ class Field extends AccessibleObject implements Member {
      *
      * @see Modifier
      */
-    public int getModifiers() {
+    public int getModifiers() { //以整数形式返回该属性的java属性描述符
         return modifiers;
     }
 
@@ -242,11 +242,11 @@ class Field extends AccessibleObject implements Member {
      *     that cannot be instantiated for any reason
      * @since 1.5
      */
-    public Type getGenericType() {
-        if (getGenericSignature() != null)
-            return getGenericInfo().getGenericType();
+    public Type getGenericType() {  //获取属性的声明类型  Type对象表示该Field的声明类型
+        if (getGenericSignature() != null)  //如果该类型没有签名属性类型，也就是该类型没有泛型
+            return getGenericInfo().getGenericType();   //返回该类型的声明类型
         else
-            return getType();
+            return getType();   //否则直接返回该属性的类型
     }
 
 
@@ -383,14 +383,14 @@ class Field extends AccessibleObject implements Member {
     @CallerSensitive
     public Object get(Object obj)
         throws IllegalArgumentException, IllegalAccessException
-    {
-        if (!override) {
-            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
-                Class<?> caller = Reflection.getCallerClass();
-                checkAccess(caller, clazz, obj, modifiers);
+    {   //获取某个字段的值
+        if (!override) {    //通过setAccessible(true)->override = ture
+            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) { //校验字段访问属性private\public\protected\默认，是否为public
+                Class<?> caller = Reflection.getCallerClass();  //获取调用类的Class对象
+                checkAccess(caller, clazz, obj, modifiers); //校验访问权限
             }
         }
-        return getFieldAccessor(obj).get(obj);
+        return getFieldAccessor(obj).get(obj);//获取字段访问器，通过字段访问器来获取该字段
     }
 
     /**
@@ -418,7 +418,7 @@ class Field extends AccessibleObject implements Member {
     @CallerSensitive
     public boolean getBoolean(Object obj)
         throws IllegalArgumentException, IllegalAccessException
-    {
+    {   //通过Field获取该对象对应字段的boolean的值
         if (!override) {
             if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
                 Class<?> caller = Reflection.getCallerClass();
@@ -453,7 +453,7 @@ class Field extends AccessibleObject implements Member {
     @CallerSensitive
     public byte getByte(Object obj)
         throws IllegalArgumentException, IllegalAccessException
-    {
+    {//Byte类型的Field，获取该对象该Field的值
         if (!override) {
             if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
                 Class<?> caller = Reflection.getCallerClass();
@@ -754,14 +754,14 @@ class Field extends AccessibleObject implements Member {
     @CallerSensitive
     public void set(Object obj, Object value)
         throws IllegalArgumentException, IllegalAccessException
-    {
-        if (!override) {
-            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
+    {   //为该对象的成员变量赋值
+        if (!override) {//判断是否覆盖语言级别的访问检查权限，field.setAccessible(true)
+            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) { //判断是否具有成员的访问权限
                 Class<?> caller = Reflection.getCallerClass();
-                checkAccess(caller, clazz, obj, modifiers);
+                checkAccess(caller, clazz, obj, modifiers); //设置访问权限
             }
         }
-        getFieldAccessor(obj).set(obj, value);
+        getFieldAccessor(obj).set(obj, value);  //获取字段访问控制器，通过访问控制器进行赋值操作
     }
 
     /**
@@ -1063,17 +1063,17 @@ class Field extends AccessibleObject implements Member {
     // security check is done before calling this method
     private FieldAccessor getFieldAccessor(Object obj)
         throws IllegalAccessException
-    {
+    {   //获取字段访问器
         boolean ov = override;
         FieldAccessor a = (ov) ? overrideFieldAccessor : fieldAccessor;
-        return (a != null) ? a : acquireFieldAccessor(ov);
+        return (a != null) ? a : acquireFieldAccessor(ov);//获取字段访问器
     }
 
     // NOTE that there is no synchronization used here. It is correct
     // (though not efficient) to generate more than one FieldAccessor
     // for a given Field. However, avoiding synchronization will
     // probably make the implementation more scalable.
-    private FieldAccessor acquireFieldAccessor(boolean overrideFinalCheck) {
+    private FieldAccessor acquireFieldAccessor(boolean overrideFinalCheck) {    //获取成员变量访问器FieldAccessor
         // First check to see if one has been created yet, and take it
         // if so
         FieldAccessor tmp = null;
@@ -1086,7 +1086,7 @@ class Field extends AccessibleObject implements Member {
         } else {
             // Otherwise fabricate one and propagate it up to the root
             tmp = reflectionFactory.newFieldAccessor(this, overrideFinalCheck);
-            setFieldAccessor(tmp, overrideFinalCheck);
+            setFieldAccessor(tmp, overrideFinalCheck);//这是字段访问器
         }
 
         return tmp;

@@ -123,8 +123,8 @@ public class AccessibleObject implements AnnotatedElement {
      * @see SecurityManager#checkPermission
      * @see java.lang.RuntimePermission
      */
-    public void setAccessible(boolean flag) throws SecurityException {
-        SecurityManager sm = System.getSecurityManager();
+    public void setAccessible(boolean flag) throws SecurityException {//指示反射的独享在使用时应该取消java语言访问检查
+        SecurityManager sm = System.getSecurityManager();   //获取安全管理器
         if (sm != null) sm.checkPermission(ACCESS_PERMISSION);
         setAccessible0(this, flag);
     }
@@ -164,7 +164,7 @@ public class AccessibleObject implements AnnotatedElement {
     //
     // NOTE: for security purposes, this field must not be visible
     // outside this package.
-    boolean override;
+    boolean override;//是否覆盖语言级别的访问检查权限，初始false
 
     // Reflection factory used by subclasses for creating field,
     // method, and constructor accessors. Note that this is called
@@ -260,7 +260,7 @@ public class AccessibleObject implements AnnotatedElement {
 
     void checkAccess(Class<?> caller, Class<?> clazz, Object obj, int modifiers)
         throws IllegalAccessException
-    {
+    {   //校验访问权限
         if (caller == clazz) {  // quick check
             return;             // ACCESS IS OK
         }

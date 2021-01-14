@@ -15,10 +15,10 @@ import java.util.Arrays;
  *      这种动态获取的信息以及动态调用对象的方法的功能称为java语言的反射机制。
  * @date 2021/1/719:29
  */
-public class ReflectDemo extends ReflectDemoPareson implements IReflectDemo{
+public class ClassDemo extends ClassDemoPareson implements IClassDemo {
 
 
-    public ReflectDemo() {
+    public ClassDemo() {
     }
 
     public static final Integer MIN = 0;
@@ -27,7 +27,7 @@ public class ReflectDemo extends ReflectDemoPareson implements IReflectDemo{
 
     private String name;
 
-    public ReflectDemo(String name){
+    public ClassDemo(String name){
         this.name = name;
     }
 
@@ -66,7 +66,7 @@ public class ReflectDemo extends ReflectDemoPareson implements IReflectDemo{
 //        Class clazz = ReflectDemo.class;
 //        System.out.println(clazz2);
         //通过Class.forName()方法
-        Class clazz = Class.forName("test.java.lang.reflect.ReflectDemo");//注意是全类名
+        Class clazz = Class.forName("test.java.lang.reflect.ClassDemo");//注意是全类名
         System.out.println(clazz.getName());//test.java.lang.reflect.ReflectDemo
 
         /**
@@ -82,7 +82,7 @@ public class ReflectDemo extends ReflectDemoPareson implements IReflectDemo{
          *      - 设置无参构造器的访问权限
          *      - 调用无参构造器生成实例
          */
-         ReflectDemo reflectDemo1 = (ReflectDemo) clazz.newInstance();//获取类的实例
+         ClassDemo reflectDemo1 = (ClassDemo) clazz.newInstance();//获取类的实例
 //            System.out.println(reflectDemo1);
         boolean flag = clazz.isInstance(reflectDemo1);//判断某个实例是否属于该Class类型
         System.out.println(flag);
@@ -159,11 +159,13 @@ public class ReflectDemo extends ReflectDemoPareson implements IReflectDemo{
 
 
         /**
-         * 获取
+         * 获取注解
          */
         System.out.println("----------------------------------------------------------------------");
         Annotation[] annotations = clazz.getAnnotations();//获取当前类上的注解
         System.out.println(Arrays.toString(annotations));//当在类上加上@Deprecated注解时返回[@java.lang.Deprecated()]
+
+
     }
 
 

@@ -6,7 +6,7 @@ package test.java.lang.reflect;
  * @description: TODO
  * @date 2021/1/1221:07
  */
-public interface IReflectDemo {
+public interface IClassDemo {
     
     String getName();
     

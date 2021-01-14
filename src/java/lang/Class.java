@@ -1696,7 +1696,7 @@ public final class Class<T> implements java.io.Serializable,
      */
     @CallerSensitive
     public Field getField(String name)
-        throws NoSuchFieldException, SecurityException {
+        throws NoSuchFieldException, SecurityException {    //根据名称获取成员变量Field对象
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         Field field = getField0(name);
         if (field == null) {
@@ -2962,7 +2962,7 @@ public final class Class<T> implements java.io.Serializable,
         return null;
     }
 
-    private Field getField0(String name) throws NoSuchFieldException {
+    private Field getField0(String name) throws NoSuchFieldException {  //根据名称获取Field
         // Note: the intent is that the search algorithm this routine
         // uses be equivalent to the ordering imposed by
         // privateGetPublicFields(). It fetches only the declared
@@ -2972,11 +2972,11 @@ public final class Class<T> implements java.io.Serializable,
         // class which is being queried.
         Field res;
         // Search declared public fields
-        if ((res = searchFields(privateGetDeclaredFields(true), name)) != null) {//获取指定name的公共属性
+        if ((res = searchFields(privateGetDeclaredFields(true), name)) != null) {   //获取公共public属性
             return res;
         }
         // Direct superinterfaces, recursively
-        Class<?>[] interfaces = getInterfaces();//
+        Class<?>[] interfaces = getInterfaces();
         for (int i = 0; i < interfaces.length; i++) {
             Class<?> c = interfaces[i];
             if ((res = c.getField0(name)) != null) {

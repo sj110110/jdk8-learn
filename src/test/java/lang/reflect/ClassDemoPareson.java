@@ -6,5 +6,5 @@ package test.java.lang.reflect;
  * @description: TODO
  * @date 2021/1/721:13
  */
-public class ReflectDemoPareson {
+public class ClassDemoPareson {
 }
