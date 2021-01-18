@@ -1068,7 +1068,7 @@ public final class Class<T> implements java.io.Serializable,
 
     private native Object[] getEnclosingMethod0();
 
-    private EnclosingMethodInfo getEnclosingMethodInfo() {
+    private EnclosingMethodInfo getEnclosingMethodInfo() {  //获取外部类。。。。TODO
         Object[] enclosingInfo = getEnclosingMethod0();
         if (enclosingInfo == null)
             return null;
@@ -1231,7 +1231,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Class<?> getDeclaringClass() throws SecurityException {
+    public Class<?> getDeclaringClass() throws SecurityException {  //获取对应类的声明类Class对象
         final Class<?> candidate = getDeclaringClass0();
 
         if (candidate != null)
@@ -1257,13 +1257,13 @@ public final class Class<T> implements java.io.Serializable,
      * @since 1.5
      */
     @CallerSensitive
-    public Class<?> getEnclosingClass() throws SecurityException {
+    public Class<?> getEnclosingClass() throws SecurityException {  //获取对应类的直接外部类Class对象
         // There are five kinds of classes (or interfaces):
-        // a) Top level classes
-        // b) Nested classes (static member classes)
-        // c) Inner classes (non-static member classes)
-        // d) Local classes (named classes declared within a method)
-        // e) Anonymous classes
+        // a) Top level classes                                         //顶级类
+        // b) Nested classes (static member classes)                    //静态内部类（静态成员类）
+        // c) Inner classes (non-static member classes)                 //内部类（非静态成员累）
+        // d) Local classes (named classes declared within a method)    //局部内部类（在方法中声明的类）
+        // e) Anonymous classes                                         //匿名内部类
 
 
         // JVM Spec 4.8.6: A class must have an EnclosingMethod
@@ -1646,7 +1646,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Constructor<?>[] getConstructors() throws SecurityException {
+    public Constructor<?>[] getConstructors() throws SecurityException {    //获取公共构造器public
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return copyConstructors(privateGetDeclaredConstructors(true));
     }
@@ -1820,7 +1820,7 @@ public final class Class<T> implements java.io.Serializable,
      */
     @CallerSensitive
     public Constructor<T> getConstructor(Class<?>... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
+        throws NoSuchMethodException, SecurityException {   //根据参数类型获取构造器
         checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
         return getConstructor0(parameterTypes, Member.PUBLIC);
     }
@@ -2015,7 +2015,7 @@ public final class Class<T> implements java.io.Serializable,
      * @since JDK1.1
      */
     @CallerSensitive
-    public Constructor<?>[] getDeclaredConstructors() throws SecurityException {
+    public Constructor<?>[] getDeclaredConstructors() throws SecurityException {    //获取某个类的所有构造器
         checkMemberAccess(Member.DECLARED, Reflection.getCallerClass(), true);
         return copyConstructors(privateGetDeclaredConstructors(false));
     }

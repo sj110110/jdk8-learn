@@ -347,7 +347,7 @@ public abstract class Executable extends AccessibleObject
      * @return an array of {@code Parameter} objects representing all
      * the parameters to the executable this object represents.
      */
-    public Parameter[] getParameters() {
+    public Parameter[] getParameters() {    //获取构造器的参数列表
         // TODO: This may eventually need to be guarded by security
         // mechanisms similar to those in Field, Method, etc.
         //
@@ -584,13 +584,13 @@ public abstract class Executable extends AccessibleObject
     /**
      * {@inheritDoc}
      */
-    public Annotation[] getDeclaredAnnotations()  {
+    public Annotation[] getDeclaredAnnotations()  { //放回构造器上的注解类型
         return AnnotationParser.toArray(declaredAnnotations());
     }
 
     private transient Map<Class<? extends Annotation>, Annotation> declaredAnnotations;
 
-    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {
+    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {  //获取构造器类型
         if (declaredAnnotations == null) {
             Executable root = getRoot();
             if (root != null) {

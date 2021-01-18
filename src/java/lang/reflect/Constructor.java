@@ -39,13 +39,13 @@ import java.lang.annotation.AnnotationFormatError;
 
 /**
  * {@code Constructor} provides information about, and access to, a single
- * constructor for a class.
+ * constructor for a class. //构造函数提供关于和访问类的单个构造函数的信息。
  *
  * <p>{@code Constructor} permits widening conversions to occur when matching the
  * actual parameters to newInstance() with the underlying
  * constructor's formal parameters, but throws an
  * {@code IllegalArgumentException} if a narrowing conversion would occur.
- *
+ *  各个参数将自动拆箱以匹配原始形式参数，并且原始参数和引用参数必须根据需要进行方法调用转换。
  * @param <T> the class in which the constructor is declared
  *
  * @see Member
@@ -58,28 +58,28 @@ import java.lang.annotation.AnnotationFormatError;
  * @author      Nakul Saraiya
  */
 public final class Constructor<T> extends Executable {
-    private Class<T>            clazz;
+    private Class<T>            clazz;  //当前构造器所属的类Class
     private int                 slot;
-    private Class<?>[]          parameterTypes;
-    private Class<?>[]          exceptionTypes;
-    private int                 modifiers;
-    // Generics and annotations support
+    private Class<?>[]          parameterTypes; //参数类型
+    private Class<?>[]          exceptionTypes; //异常类型
+    private int                 modifiers;  //java描述符
+    // Generics and annotations support //泛型和注释支持
     private transient String    signature;
-    // generic info repository; lazily initialized
+    // generic info repository; lazily initialized  //泛型信息存储库;延迟初始化
     private transient ConstructorRepository genericInfo;
     private byte[]              annotations;
     private byte[]              parameterAnnotations;
 
     // Generics infrastructure
     // Accessor for factory
-    private GenericsFactory getFactory() {
+    private GenericsFactory getFactory() {  //获取泛型工厂
         // create scope and factory
         return CoreReflectionFactory.make(this, ConstructorScope.make(this));
     }
 
     // Accessor for generic info repository
     @Override
-    ConstructorRepository getGenericInfo() {
+    ConstructorRepository getGenericInfo() {    //获取泛型信息
         // lazily initialize repository if necessary
         if (genericInfo == null) {
             // create and cache generic info repository
@@ -90,7 +90,7 @@ public final class Constructor<T> extends Executable {
         return genericInfo; //return cached repository
     }
 
-    private volatile ConstructorAccessor constructorAccessor;
+    private volatile ConstructorAccessor constructorAccessor;//构造器访问器
     // For sharing of ConstructorAccessors. This branching structure
     // is currently only two levels deep (i.e., one root Constructor
     // and potentially many Constructor objects pointing to it.)
@@ -172,7 +172,7 @@ public final class Constructor<T> extends Executable {
      * {@inheritDoc}
      */
     @Override
-    public Class<T> getDeclaringClass() {
+    public Class<T> getDeclaringClass() {   //获取该构造器哦起所属类Class
         return clazz;
     }
 
@@ -189,7 +189,7 @@ public final class Constructor<T> extends Executable {
      * {@inheritDoc}
      */
     @Override
-    public int getModifiers() {
+    public int getModifiers() { //获取修饰符的int值
         return modifiers;
     }
 
@@ -212,7 +212,7 @@ public final class Constructor<T> extends Executable {
      * {@inheritDoc}
      */
     @Override
-    public Class<?>[] getParameterTypes() {
+    public Class<?>[] getParameterTypes() { //获取构造器的参数列表类型
         return parameterTypes.clone();
     }
 
@@ -220,7 +220,7 @@ public final class Constructor<T> extends Executable {
      * {@inheritDoc}
      * @since 1.8
      */
-    public int getParameterCount() { return parameterTypes.length; }
+    public int getParameterCount() { return parameterTypes.length; }//返回构造器的参数数量
 
     /**
      * {@inheritDoc}
@@ -238,7 +238,7 @@ public final class Constructor<T> extends Executable {
      * {@inheritDoc}
      */
     @Override
-    public Class<?>[] getExceptionTypes() {
+    public Class<?>[] getExceptionTypes() {//返回构造器对象异常类型,//表示由此构造方对象表示的底层构造函数声明的异常类型
         return exceptionTypes.clone();
     }
 
@@ -251,7 +251,7 @@ public final class Constructor<T> extends Executable {
      * @since 1.5
      */
     @Override
-    public Type[] getGenericExceptionTypes() {
+    public Type[] getGenericExceptionTypes() {//声明为该Constructor对象抛出的异常
         return super.getGenericExceptionTypes();
     }
 
@@ -406,21 +406,21 @@ public final class Constructor<T> extends Executable {
     public T newInstance(Object ... initargs)
         throws InstantiationException, IllegalAccessException,
                IllegalArgumentException, InvocationTargetException
-    {
-        if (!override) {
+    {   //通过参数列表，构造该构造器对应的类的实例对象
+        if (!override) {//该标识表示是否覆盖语言级别的访问检查权限，初始false，可以通过通过constructor1.setAccessible(true)设置为true
             if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
-                Class<?> caller = Reflection.getCallerClass();
-                checkAccess(caller, clazz, null, modifiers);
+                Class<?> caller = Reflection.getCallerClass();  //获取调用类
+                checkAccess(caller, clazz, null, modifiers);//校验权限
             }
         }
-        if ((clazz.getModifiers() & Modifier.ENUM) != 0)
+        if ((clazz.getModifiers() & Modifier.ENUM) != 0)    //修饰符是否为枚举类型
             throw new IllegalArgumentException("Cannot reflectively create enum objects");
         ConstructorAccessor ca = constructorAccessor;   // read volatile
         if (ca == null) {
-            ca = acquireConstructorAccessor();
+            ca = acquireConstructorAccessor();  //获取构造器的访问器
         }
         @SuppressWarnings("unchecked")
-        T inst = (T) ca.newInstance(initargs);
+        T inst = (T) ca.newInstance(initargs);//通过构造函数声明类的newInstance来实例化对象
         return inst;
     }
 
@@ -452,7 +452,7 @@ public final class Constructor<T> extends Executable {
         // First check to see if one has been created yet, and take it
         // if so.
         ConstructorAccessor tmp = null;
-        if (root != null) tmp = root.getConstructorAccessor();
+        if (root != null) tmp = root.getConstructorAccessor();//获取上层的ConstructorAccessor
         if (tmp != null) {
             constructorAccessor = tmp;
         } else {
@@ -472,7 +472,7 @@ public final class Constructor<T> extends Executable {
 
     // Sets the ConstructorAccessor for this Constructor object and
     // (recursively) its root
-    void setConstructorAccessor(ConstructorAccessor accessor) {
+    void setConstructorAccessor(ConstructorAccessor accessor) { //设置构造函数访问器（构造函数声明类）
         constructorAccessor = accessor;
         // Propagate up
         if (root != null) {
@@ -557,9 +557,9 @@ public final class Constructor<T> extends Executable {
      * @since 1.8
      */
     @Override
-    public AnnotatedType getAnnotatedReceiverType() {
+    public AnnotatedType getAnnotatedReceiverType() {//返回构造器的接收方类型
         if (getDeclaringClass().getEnclosingClass() == null)
-            return super.getAnnotatedReceiverType();
+            return super.getAnnotatedReceiverType();//放回一个方法/构造函数接收方类型
 
         return TypeAnnotationParser.buildAnnotatedType(getTypeAnnotationBytes0(),
                 sun.misc.SharedSecrets.getJavaLangAccess().
