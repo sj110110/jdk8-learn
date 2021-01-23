@@ -59,17 +59,17 @@ import java.nio.ByteBuffer;
  * @author Nakul Saraiya
  */
 public final class Method extends Executable {
-    private Class<?>            clazz;
+    private Class<?>            clazz;  //声明类的Class
     private int                 slot;
     // This is guaranteed to be interned by the VM in the 1.4
     // reflection implementation
-    private String              name;
-    private Class<?>            returnType;
-    private Class<?>[]          parameterTypes;
-    private Class<?>[]          exceptionTypes;
-    private int                 modifiers;
+    private String              name;   //方法名称
+    private Class<?>            returnType;//返回值类型Class
+    private Class<?>[]          parameterTypes;//参数类型Class
+    private Class<?>[]          exceptionTypes;//异常类型Class
+    private int                 modifiers;  //该方法标识的语言描述符
     // Generics and annotations support
-    private transient String              signature;
+    private transient String              signature;    //
     // generic info repository; lazily initialized
     private transient MethodRepository genericInfo;
     private byte[]              annotations;
@@ -82,7 +82,7 @@ public final class Method extends Executable {
     //
     // If this branching structure would ever contain cycles, deadlocks can
     // occur in annotation code.
-    private Method              root;
+    private Method              root;   //可以理解为每一个java方法都有唯一的一个Method对象，这个对象就是root，我们可以利用反射创建java方法的众多的Method类的对象，这些对象指向root，可以理解为root的镜像。
 
     // Generics infrastructure
     private String getGenericSignature() {return signature;}
@@ -484,8 +484,8 @@ public final class Method extends Executable {
     public Object invoke(Object obj, Object... args)
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
-    {
-        if (!override) {
+    {   //执行Method底层方法去执行所表示的方法
+        if (!override) {    //权限校验
             if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
                 Class<?> caller = Reflection.getCallerClass();
                 checkAccess(caller, clazz, obj, modifiers);
@@ -493,7 +493,7 @@ public final class Method extends Executable {
         }
         MethodAccessor ma = methodAccessor;             // read volatile
         if (ma == null) {
-            ma = acquireMethodAccessor();
+            ma = acquireMethodAccessor();   //获取方法访问器，即方法的声明类
         }
         return ma.invoke(obj, args);
     }
@@ -598,11 +598,11 @@ public final class Method extends Executable {
      *     default class value.
      * @since  1.5
      */
-    public Object getDefaultValue() {
-        if  (annotationDefault == null)
+    public Object getDefaultValue() {//返回该方法标注的注解的默认返回值
+        if  (annotationDefault == null) //如果注解的默认值为null，直接返回null
             return null;
         Class<?> memberType = AnnotationType.invocationHandlerReturnType(
-            getReturnType());
+            getReturnType());//
         Object result = AnnotationParser.parseMemberValue(
             memberType, ByteBuffer.wrap(annotationDefault),
             sun.misc.SharedSecrets.getJavaLangAccess().

@@ -134,7 +134,7 @@ public final class Class<T> implements java.io.Serializable,
      * This constructor is not used and prevents the default constructor being
      * generated.
      */
-    private Class(ClassLoader loader) {//似有构造方法，只有JVM虚拟机能够可以创建Class对象
+    private Class(ClassLoader loader) {//私有构造方法，只有JVM虚拟机能够可以创建Class对象
         // Initialize final field for classLoader.  The initialization value of non-null
         // prevents future JIT optimizations from assuming this final field is null.
         classLoader = loader;
@@ -1779,9 +1779,9 @@ public final class Class<T> implements java.io.Serializable,
      */
     @CallerSensitive
     public Method getMethod(String name, Class<?>... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
-        checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
-        Method method = getMethod0(name, parameterTypes, true);
+        throws NoSuchMethodException, SecurityException {   //根据方法名和参数列表Class获取指定的方法Method对象
+        checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);//校验权限
+        Method method = getMethod0(name, parameterTypes, true);//获取方法对象，包含静态方法
         if (method == null) {
             throw new NoSuchMethodException(getName() + "." + name + argumentTypesToString(parameterTypes));
         }
@@ -2334,7 +2334,7 @@ public final class Class<T> implements java.io.Serializable,
      * control.
      */
     private void checkMemberAccess(int which, Class<?> caller, boolean checkProxyInterfaces) {  //设置成员的访问权限
-        final SecurityManager s = System.getSecurityManager();  //获取安全管理器
+        final SecurityManager s = System.getSecurityManager();  //获取安全管理器，默认是关闭的，所以这里是null
         if (s != null) {
             /* Default policy allows access to all {@link Member#PUBLIC} members,
              * as well as access to classes that have the same class loader as the caller.
@@ -3013,8 +3013,8 @@ public final class Class<T> implements java.io.Serializable,
         return (res == null ? res : getReflectionFactory().copyMethod(res));
     }
 
-    private Method getMethod0(String name, Class<?>[] parameterTypes, boolean includeStaticMethods) {
-        MethodArray interfaceCandidates = new MethodArray(2);
+    private Method getMethod0(String name, Class<?>[] parameterTypes, boolean includeStaticMethods) {   //获取方法对象
+        MethodArray interfaceCandidates = new MethodArray(2);   //初始化用于存放Method对象的类
         Method res =  privateGetMethodRecursive(name, parameterTypes, includeStaticMethods, interfaceCandidates);
         if (res != null)
             return res;
@@ -3126,11 +3126,11 @@ public final class Class<T> implements java.io.Serializable,
         return out;
     }
 
-    private static <U> Constructor<U>[] copyConstructors(Constructor<U>[] arg) {
-        Constructor<U>[] out = arg.clone();
-        ReflectionFactory fact = getReflectionFactory();
+    private static <U> Constructor<U>[] copyConstructors(Constructor<U>[] arg) {//拷贝constructors
+        Constructor<U>[] out = arg.clone();//获取Constructor副本
+        ReflectionFactory fact = getReflectionFactory();    //获取获取反射工厂
         for (int i = 0; i < out.length; i++) {
-            out[i] = fact.copyConstructor(out[i]);
+            out[i] = fact.copyConstructor(out[i]);//通过反射工厂拷贝Constructor
         }
         return out;
     }
