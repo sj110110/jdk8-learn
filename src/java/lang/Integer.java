@@ -306,13 +306,13 @@ public final class Integer extends Number implements Comparable<Integer> {
     /**
      * Convert the integer to an unsigned number.
      */
-    private static String toUnsignedString0(int val, int shift) {   //将整数转换为无符号数。
+    private static String toUnsignedString0(int val, int shift) {   //将整数转换为无符号数。shift的值1-二进制,3-八进制,4-十六进制
         // assert shift > 0 && shift <=5 : "Illegal shift value";
-        int mag = Integer.SIZE - Integer.numberOfLeadingZeros(val);
-        int chars = Math.max(((mag + (shift - 1)) / shift), 1);
-        char[] buf = new char[chars];
+        int mag = Integer.SIZE - Integer.numberOfLeadingZeros(val);//得到从高位起第一个不为0的位的位数
+        int chars = Math.max(((mag + (shift - 1)) / shift), 1);//得到转换成对应进制需要的字符数
+        char[] buf = new char[chars];//创建对应字符数量的的char数组
 
-        formatUnsignedInt(val, shift, buf, 0, chars);
+        formatUnsignedInt(val, shift, buf, 0, chars);//得到从高位起第一个不为0的位的位数
 
         // Use special constructor which takes over "buf".
         return new String(buf, true);
@@ -826,7 +826,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @return an {@code Integer} instance representing {@code i}.
      * @since  1.5
      */
-    public static Integer valueOf(int i) {  //将一个字符串
+    public static Integer valueOf(int i) {  
         if (i >= IntegerCache.low && i <= IntegerCache.high)    //如果数值在-128~127之间的整数，可以从缓存中取
             return IntegerCache.cache[i + (-IntegerCache.low)];
         return new Integer(i);
@@ -1392,13 +1392,13 @@ public final class Integer extends Number implements Comparable<Integer> {
      *     is equal to zero.
      * @since 1.5
      */
-    public static int numberOfLeadingZeros(int i) {
+    public static int numberOfLeadingZeros(int i) {//这个方法返回最高非0位前为0的个数
         // HD, Figure 5-6
-        if (i == 0)
+        if (i == 0) //如果为0，也就是int数值32位全为0
             return 32;
-        int n = 1;
-        if (i >>> 16 == 0) { n += 16; i <<= 16; }
-        if (i >>> 24 == 0) { n +=  8; i <<=  8; }
+        int n = 1;  //如果不是0，说明至少有一个0，//下面就类似与二分法查询了
+        if (i >>> 16 == 0) { n += 16; i <<= 16; }   //首先将i向右无符号右移16位，相当于高16位全部移到底16位上，同时高位补0，如果这是后等于0，说明高16位全为0，所n=n+16，然后将i有符号左移16位
+        if (i >>> 24 == 0) { n +=  8; i <<=  8; }   //
         if (i >>> 28 == 0) { n +=  4; i <<=  4; }
         if (i >>> 30 == 0) { n +=  2; i <<=  2; }
         n -= i >>> 31;
