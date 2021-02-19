@@ -60,7 +60,7 @@ public class Object {
      *         class of this object.
      * @jls 15.8.2 Class Literals
      */
-    public final native Class<?> getClass();
+    public final native Class<?> getClass();//获取类的Class对象
 
     /**
      * Returns a hash code value for the object. This method is
@@ -97,7 +97,7 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
-    public native int hashCode();
+    public native int hashCode();//返回该对象的哈希值
 
     /**
      * Indicates whether some other object is "equal to" this one.
@@ -147,7 +147,7 @@ public class Object {
      */
     public boolean equals(Object obj) {
         return (this == obj);
-    }
+    }//比较其他对象与此对象是否相等
 
     /**
      * Creates and returns a copy of this object.  The precise meaning
@@ -234,7 +234,7 @@ public class Object {
      */
     public String toString() {
         return getClass().getName() + "@" + Integer.toHexString(hashCode());
-    }
+    }//返回这个对象的字符串表示
 
     /**
      * Wakes up a single thread that is waiting on this object's

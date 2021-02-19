@@ -5,15 +5,22 @@ package test.java.lang;
  */
 public class IntegerDemo {
     public static void main(String[] args) {
+        //测试boolean类型
+        boolean flag = true;
+        System.out.println(flag);
+
+        char ch = 'a';
+        Character character = ch;
+
         Integer a1 = 127;//自动装箱调用Integer.valueOf(127);方法
         Integer a2 = 127;
         System.out.println(a1 == a2);
         System.out.println(a1.equals(a2));
-
-        Integer b1 = 128;
-        Integer b2 = 128;
-        System.out.println(b1 == b2);
-        System.out.println(b1.equals(b2));
+//
+//        Integer b1 = 128;
+//        Integer b2 = 128;
+//        System.out.println(b1 == b2);
+//        System.out.println(b1.equals(b2));
 
 //        Class a = int.class;
 //        Class b = Integer.TYPE;
