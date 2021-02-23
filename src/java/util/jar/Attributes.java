@@ -415,7 +415,7 @@ public class Attributes implements Map<Object,Object>, Cloneable {
                     System.arraycopy(lbuf, i, lastline, 0, len - i);
                     continue;
                 }
-                value = new String(lbuf, i, len - i, "UTF8");
+                value = new String(lbuf, i, len - i, "UTF8");//
             }
             try {
                 if ((putValue(name, value) != null) && (!lineContinued)) {

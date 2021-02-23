@@ -59,7 +59,7 @@ class StringCoding {
 
     private static boolean warnUnsupportedCharset = true;
 
-    private static <T> T deref(ThreadLocal<SoftReference<T>> tl) {
+    private static <T> T deref(ThreadLocal<SoftReference<T>> tl) {  //解码软引用获取对象
         SoftReference<T> sr = tl.get();
         if (sr == null)
             return null;
@@ -96,7 +96,7 @@ class StringCoding {
     }
 
     private static Charset lookupCharset(String csn) {
-        if (Charset.isSupported(csn)) {
+        if (Charset.isSupported(csn)) {//判断是否支持该编码
             try {
                 return Charset.forName(csn);
             } catch (UnsupportedCharsetException x) {
@@ -144,7 +144,7 @@ class StringCoding {
             return requestedCharsetName;
         }
 
-        char[] decode(byte[] ba, int off, int len) {
+        char[] decode(byte[] ba, int off, int len) {//解码
             int en = scale(len, cd.maxCharsPerByte());
             char[] ca = new char[en];
             if (len == 0)
@@ -173,18 +173,18 @@ class StringCoding {
         }
     }
 
-    static char[] decode(String charsetName, byte[] ba, int off, int len)
+    static char[] decode(String charsetName, byte[] ba, int off, int len)   //根据指定的编码方式进行解码
         throws UnsupportedEncodingException
     {
-        StringDecoder sd = deref(decoder);
-        String csn = (charsetName == null) ? "ISO-8859-1" : charsetName;
+        StringDecoder sd = deref(decoder);//获取StringDecoder对象
+        String csn = (charsetName == null) ? "ISO-8859-1" : charsetName;//判断编码
         if ((sd == null) || !(csn.equals(sd.requestedCharsetName())
                               || csn.equals(sd.charsetName()))) {
             sd = null;
             try {
                 Charset cs = lookupCharset(csn);
                 if (cs != null)
-                    sd = new StringDecoder(cs, csn);
+                    sd = new StringDecoder(cs, csn);//根据编码对象Charset创建StringDecoder对象
             } catch (IllegalCharsetNameException x) {}
             if (sd == null)
                 throw new UnsupportedEncodingException(csn);
@@ -248,10 +248,10 @@ class StringCoding {
     }
 
     static char[] decode(byte[] ba, int off, int len) {
-        String csn = Charset.defaultCharset().name();
+        String csn = Charset.defaultCharset().name();//获取默认编码 如：UTF-8
         try {
             // use charset name decode() variant which provides caching.
-            return decode(csn, ba, off, len);
+            return decode(csn, ba, off, len);//根据编码进行解码
         } catch (UnsupportedEncodingException x) {
             warnUnsupportedCharset(csn);
         }

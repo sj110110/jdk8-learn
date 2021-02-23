@@ -376,7 +376,7 @@ public final class String
      * and requested offset & length values used by the String(byte[],..)
      * constructors.
      */
-    private static void checkBounds(byte[] bytes, int offset, int length) {
+    private static void checkBounds(byte[] bytes, int offset, int length) {//校验边界和偏移量
         if (length < 0)
             throw new StringIndexOutOfBoundsException(length);
         if (offset < 0)
@@ -542,7 +542,7 @@ public final class String
      * @since  JDK1.1
      */
     public String(byte bytes[], int offset, int length) {
-        checkBounds(bytes, offset, length);
+        checkBounds(bytes, offset, length);//校验边界
         this.value = StringCoding.decode(bytes, offset, length);
     }
 
@@ -562,7 +562,7 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[]) {
+    public String(byte bytes[]) {//通过传入字节数组创建String对象
         this(bytes, 0, bytes.length);
     }
 
@@ -1150,7 +1150,7 @@ public final class String
      *          value greater than {@code 0} if this string is
      *          lexicographically greater than the string argument.
      */
-    public int compareTo(String anotherString) {
+    public int compareTo(String anotherString) {    //逐个字符比较大小，通过char进行比较
         int len1 = value.length;
         int len2 = anotherString.value.length;
         int lim = Math.min(len1, len2);
@@ -1184,24 +1184,24 @@ public final class String
     public static final Comparator<String> CASE_INSENSITIVE_ORDER
                                          = new CaseInsensitiveComparator();
     private static class CaseInsensitiveComparator
-            implements Comparator<String>, java.io.Serializable {
+            implements Comparator<String>, java.io.Serializable {   //内部类
         // use serialVersionUID from JDK 1.2.2 for interoperability
         private static final long serialVersionUID = 8575799808933029326L;
 
-        public int compare(String s1, String s2) {
+        public int compare(String s1, String s2) {//比较两个字符串大小,同时比较了UpperCase和LowerCase，是为了兼容Georgian字符
             int n1 = s1.length();
             int n2 = s2.length();
             int min = Math.min(n1, n2);
             for (int i = 0; i < min; i++) {
                 char c1 = s1.charAt(i);
                 char c2 = s2.charAt(i);
-                if (c1 != c2) {
+                if (c1 != c2) { //1.同位字符比较
                     c1 = Character.toUpperCase(c1);
                     c2 = Character.toUpperCase(c2);
-                    if (c1 != c2) {
+                    if (c1 != c2) { //2.全转为转为大写再比较
                         c1 = Character.toLowerCase(c1);
                         c2 = Character.toLowerCase(c2);
-                        if (c1 != c2) {
+                        if (c1 != c2) {//全部转为小写再比较
                             // No overflow because of numeric promotion
                             return c1 - c2;
                         }
@@ -2023,15 +2023,15 @@ public final class String
      * @return  a string that represents the concatenation of this object's
      *          characters followed by the string argument's characters.
      */
-    public String concat(String str) {
-        int otherLen = str.length();
+    public String concat(String str) {  //拼接字符串
+        int otherLen = str.length();    //获取待拼接字符串长度
         if (otherLen == 0) {
             return this;
         }
-        int len = value.length;
-        char buf[] = Arrays.copyOf(value, len + otherLen);
-        str.getChars(buf, len);
-        return new String(buf, true);
+        int len = value.length; //获取原字符串长度
+        char buf[] = Arrays.copyOf(value, len + otherLen);//使用拷贝的方式，创建新的char数组，并赋值
+        str.getChars(buf, len); //相当于将参数字符串拷贝到原字符串尾部，返回字符数组
+        return new String(buf, true);//通过字符数组创建String对象返回
     }
 
     /**
@@ -2326,7 +2326,7 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    public String[] split(String regex, int limit) {
+    public String[] split(String regex, int limit) {    //按照正则表达式进行分割字符串
         /* fastpath if the regex is a
          (1)one-char String and this character is not one of the
             RegEx's meta characters ".$|()[{^?*+\\", or
