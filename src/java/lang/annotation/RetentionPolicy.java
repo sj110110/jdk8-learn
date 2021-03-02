@@ -38,14 +38,14 @@ public enum RetentionPolicy {
     /**
      * Annotations are to be discarded by the compiler.
      */
-    SOURCE,
+    SOURCE, //表示注解会被编译期丢弃。该注解只会保留在源码中，源码经过编译，注解将被丢弃，即在class文件中将找不到该注解了；
 
     /**
      * Annotations are to be recorded in the class file by the compiler
      * but need not be retained by the VM at run time.  This is the default
      * behavior.
      */
-    CLASS,
+    CLASS,  //表示注解会被VM丢弃。该注解会保留在class文件中，但是当class加载到vm内存中是，该注解会被丢弃。注意，当注解未定义Retention值时，默认值是CLASS，如Java内置注解，@Override、@Deprecated、@SuppressWarnning等；
 
     /**
      * Annotations are to be recorded in the class file by the compiler and
@@ -53,5 +53,5 @@ public enum RetentionPolicy {
      *
      * @see java.lang.reflect.AnnotatedElement
      */
-    RUNTIME
+    RUNTIME //表示该注解将在运行期（jvm）中保留，因此可以通过反射机制获取到该注解的相关信息。如SpringMvc中的@Controller、@Autowired、@RequestMapping等。
 }

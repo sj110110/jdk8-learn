@@ -10,6 +10,7 @@ public class ObjectDemo {
 //        Thread.sleep(100);
 //        Thread t1 = new Thread(new MyThread2(obj));
 //        t1.start();
+        ///////
 
         synchronized (args){
             System.out.println("1111");

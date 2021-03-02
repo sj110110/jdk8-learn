@@ -46,7 +46,7 @@ import java.lang.annotation.*;
  * @jls 9.6.1.4 @Override
  * @since 1.5
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.METHOD) //元注解：@Target作用是标明@Override注解的作用地方，这里是方法上
+@Retention(RetentionPolicy.SOURCE)//元注解：
 public @interface Override {
 }

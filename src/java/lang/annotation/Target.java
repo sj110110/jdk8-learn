@@ -83,5 +83,5 @@ public @interface Target {
      * @return an array of the kinds of elements an annotation type
      * can be applied to
      */
-    ElementType[] value();
+    ElementType[] value();  //使用ElementType类型的数组来设定值
 }

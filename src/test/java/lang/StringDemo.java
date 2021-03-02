@@ -20,7 +20,7 @@ public class StringDemo {
 //        byte[] b = {97, 106};
 //        String str3 = new String(b);
 //        System.out.println(str3);
-
+//aaaaaaaaaa
         /*
         常见方法
          */

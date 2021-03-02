@@ -12,6 +12,7 @@ public class ObjectCloneDemo {
 //        PersonDemo p1 = new PersonDemo();
 //        PersonDemo p2 = (PersonDemo) p1.clone();
         System.out.println(p1 == p2);
+        System.out.println("1111111111111");
     }
 }
 

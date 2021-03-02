@@ -72,40 +72,40 @@ package java.lang.annotation;
  */
 public enum ElementType {
     /** Class, interface (including annotation type), or enum declaration */
-    TYPE,
+    TYPE,   //类、接口（注解）和枚举类
 
     /** Field declaration (includes enum constants) */
-    FIELD,
+    FIELD,  //字段
 
     /** Method declaration */
-    METHOD,
+    METHOD, //方法
 
     /** Formal parameter declaration */
-    PARAMETER,
+    PARAMETER,  //参数
 
     /** Constructor declaration */
-    CONSTRUCTOR,
+    CONSTRUCTOR,    //构造器
 
     /** Local variable declaration */
-    LOCAL_VARIABLE,
+    LOCAL_VARIABLE, //局部变量
 
     /** Annotation type declaration */
-    ANNOTATION_TYPE,
+    ANNOTATION_TYPE,    //注解
 
     /** Package declaration */
-    PACKAGE,
+    PACKAGE,    //包
 
     /**
      * Type parameter declaration
      *
      * @since 1.8
      */
-    TYPE_PARAMETER,
+    TYPE_PARAMETER, //类型参数（1.8新加入)
 
     /**
      * Use of a type
      *
      * @since 1.8
      */
-    TYPE_USE
+    TYPE_USE    //类型使用声明（1.8新加入)
 }

@@ -9,6 +9,7 @@ public class NumberTest {
 
         boolean b1 = true;
         Boolean b = b1;
+        System.out.println("22222222");
         boolean b2 = b;
 
 
