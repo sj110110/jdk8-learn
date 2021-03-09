@@ -3498,7 +3498,7 @@ public final class Class<T> implements java.io.Serializable,
     @SuppressWarnings("UnusedDeclaration")
     private volatile transient AnnotationData annotationData;
 
-    private AnnotationData annotationData() {
+    private AnnotationData annotationData() {//获取注解的数据
         while (true) { // retry loop
             AnnotationData annotationData = this.annotationData;
             int classRedefinedCount = this.classRedefinedCount;
@@ -3516,7 +3516,7 @@ public final class Class<T> implements java.io.Serializable,
         }
     }
 
-    private AnnotationData createAnnotationData(int classRedefinedCount) {
+    private AnnotationData createAnnotationData(int classRedefinedCount) {  //构建注解的数据
         Map<Class<? extends Annotation>, Annotation> declaredAnnotations =
             AnnotationParser.parseAnnotations(getRawAnnotations(), getConstantPool(), this);
         Class<?> superClass = getSuperclass();

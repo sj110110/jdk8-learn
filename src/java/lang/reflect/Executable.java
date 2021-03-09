@@ -566,7 +566,7 @@ public abstract class Executable extends AccessibleObject
      * @throws NullPointerException  {@inheritDoc}
      */
     public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        Objects.requireNonNull(annotationClass);
+        Objects.requireNonNull(annotationClass);    //空校验
         return annotationClass.cast(declaredAnnotations().get(annotationClass));
     }
 
@@ -590,13 +590,13 @@ public abstract class Executable extends AccessibleObject
 
     private transient Map<Class<? extends Annotation>, Annotation> declaredAnnotations;
 
-    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {  //获取构造器类型
+    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {  //返回一个Map，key是继承了Annotation接口的类class,value是Annotation对象
         if (declaredAnnotations == null) {
             Executable root = getRoot();
             if (root != null) {
                 declaredAnnotations = root.declaredAnnotations();
             } else {
-                declaredAnnotations = AnnotationParser.parseAnnotations(
+                declaredAnnotations = AnnotationParser.parseAnnotations(//解析数据，组装生成的Map
                     getAnnotationBytes(),
                     sun.misc.SharedSecrets.getJavaLangAccess().
                     getConstantPool(getDeclaringClass()),

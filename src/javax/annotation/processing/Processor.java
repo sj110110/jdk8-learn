@@ -264,7 +264,7 @@ public interface Processor {
      * @jls 3.8 Identifiers
      * @jls 6.5.5 Meaning of Type Names
      */
-    Set<String> getSupportedAnnotationTypes();
+    Set<String> getSupportedAnnotationTypes();//通过该方法获得该注解处理器能够处理的注解类型的全称，也就是当前这个注解处理器用于处理哪个（些）注解。
 
     /**
      * Returns the latest source version supported by this annotation
@@ -275,7 +275,7 @@ public interface Processor {
      * @see javax.annotation.processing.SupportedSourceVersion
      * @see ProcessingEnvironment#getSourceVersion
      */
-    SourceVersion getSupportedSourceVersion();
+    SourceVersion getSupportedSourceVersion();//用来指定已使用的java版本，通常这里返回SourceVersion.RELEASE.6
 
     /**
      * Initializes the processor with the processing environment.
@@ -283,7 +283,7 @@ public interface Processor {
      * @param processingEnv environment for facilities the tool framework
      * provides to the processor
      */
-    void init(ProcessingEnvironment processingEnv);
+    void init(ProcessingEnvironment processingEnv);//它会被注解处理器调用，并输入ProcessingEnviroment参数。ProcessingEnviroment提供了很多工具类Elements, Types和Filer。
 
     /**
      * Processes a set of annotation types on type elements

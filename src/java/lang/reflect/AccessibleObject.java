@@ -177,7 +177,7 @@ public class AccessibleObject implements AnnotatedElement {
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {   //通过类型获取注解实例
         throw new AssertionError("All subclasses should override this method");
     }
 

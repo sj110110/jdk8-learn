@@ -598,8 +598,8 @@ public final class Method extends Executable {
      *     default class value.
      * @since  1.5
      */
-    public Object getDefaultValue() {//返回该方法标注的注解的默认返回值
-        if  (annotationDefault == null) //如果注解的默认值为null，直接返回null
+    public Object getDefaultValue() {//返回该方法标注的注解元素的默认返回值
+        if  (annotationDefault == null) //如果注解元素的默认值为null，直接返回null
             return null;
         Class<?> memberType = AnnotationType.invocationHandlerReturnType(
             getReturnType());//
