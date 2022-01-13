@@ -27,6 +27,7 @@ public class AnnotationDemo {
 
     @Override
     public String toString() {
+        System.out.println("重写方法");
         return super.toString();
     }
 

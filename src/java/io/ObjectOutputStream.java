@@ -166,7 +166,7 @@ public class ObjectOutputStream
     private static class Caches {
         /** cache of subclass security audit results */
         static final ConcurrentMap<WeakClassKey,Boolean> subclassAudits =
-            new ConcurrentHashMap<>();
+            new ConcurrentHashMap<>();//来缓存ObjectOutputStream子类信息
 
         /** queue for WeakReferences to audited subclasses */
         static final ReferenceQueue<Class<?>> subclassAuditsQueue =
@@ -212,7 +212,7 @@ public class ObjectOutputStream
     private static final boolean extendedDebugInfo =
         java.security.AccessController.doPrivileged(
             new sun.security.action.GetBooleanAction(
-                "sun.io.serialization.extendedDebugInfo")).booleanValue();
+                "sun.io.serialization.extendedDebugInfo")).booleanValue();//配置信息决定是否启用调式信息栈
 
     /**
      * Creates an ObjectOutputStream that writes to the specified OutputStream.
@@ -238,13 +238,13 @@ public class ObjectOutputStream
      * @see     ObjectInputStream#ObjectInputStream(InputStream)
      */
     public ObjectOutputStream(OutputStream out) throws IOException {
-        verifySubclass();
-        bout = new BlockDataOutputStream(out);
-        handles = new HandleTable(10, (float) 3.00);
+        verifySubclass();//检查继承权限
+        bout = new BlockDataOutputStream(out);//构造一个BlockDataOutputStream用于向out写入序列化数据
+        handles = new HandleTable(10, (float) 3.00);//构造一个大小为10，负载因子为3的HandleTable和ReplaceTable
         subs = new ReplaceTable(10, (float) 3.00);
-        enableOverride = false;
+        enableOverride = false;  //恒为false，除非子类调用protected构造方法
         writeStreamHeader();
-        bout.setBlockDataMode(true);
+        bout.setBlockDataMode(true);//将缓存模式打开，写入数据时先写入缓冲区
         if (extendedDebugInfo) {
             debugInfoStack = new DebugTraceInfoStack();
         } else {
@@ -340,8 +340,8 @@ public class ObjectOutputStream
      *          OutputStream.
      */
     public final void writeObject(Object obj) throws IOException {
-        if (enableOverride) {
-            writeObjectOverride(obj);
+        if (enableOverride) {//在ObjectOutputStream中这个变量恒为false，只有子类为true
+            writeObjectOverride(obj);//实现为空，供子类重写用
             return;
         }
         try {
@@ -632,7 +632,7 @@ public class ObjectOutputStream
      * @throws  IOException if I/O errors occur while writing to the underlying
      *          stream
      */
-    protected void writeStreamHeader() throws IOException {
+    protected void writeStreamHeader() throws IOException {//将魔数(0xACED)和版本标识符(0x0005)写入文件头，用来检测是不是一个序列化对象。
         bout.writeShort(STREAM_MAGIC);
         bout.writeShort(STREAM_VERSION);
     }
@@ -1037,17 +1037,17 @@ public class ObjectOutputStream
      * security-sensitive non-final methods, or else the
      * "enableSubclassImplementation" SerializablePermission is checked.
      */
-    private void verifySubclass() {
+    private void verifySubclass() {//校验构造方法是不是OjbectOutputStream的子类
         Class<?> cl = getClass();
-        if (cl == ObjectOutputStream.class) {
+        if (cl == ObjectOutputStream.class) {//如果构造的不是ObjectOutputStream的子类则直接返回
             return;
         }
-        SecurityManager sm = System.getSecurityManager();
+        SecurityManager sm = System.getSecurityManager();//否则获取安全管理器检查是否有继承ObjectOutputStream的权限
         if (sm == null) {
             return;
         }
-        processQueue(Caches.subclassAuditsQueue, Caches.subclassAudits);
-        WeakClassKey key = new WeakClassKey(cl, Caches.subclassAuditsQueue);
+        processQueue(Caches.subclassAuditsQueue, Caches.subclassAudits);//移除Caches中已经失去引用的Class对象
+        WeakClassKey key = new WeakClassKey(cl, Caches.subclassAuditsQueue);//将ObjectOutputStream的子类存入Caches
         Boolean result = Caches.subclassAudits.get(key);
         if (result == null) {
             result = Boolean.valueOf(auditSubclass(cl));
@@ -1056,7 +1056,7 @@ public class ObjectOutputStream
         if (result.booleanValue()) {
             return;
         }
-        sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
+        sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);//如果没有权限则抛出SecurityException异常
     }
 
     /**
@@ -1105,12 +1105,12 @@ public class ObjectOutputStream
     private void writeObject0(Object obj, boolean unshared)
         throws IOException
     {
-        boolean oldMode = bout.setBlockDataMode(false);
+        boolean oldMode = bout.setBlockDataMode(false);//关闭缓冲模式，直接向目标OutputStream写入数据
         depth++;
         try {
-            // handle previously written and non-replaceable objects
+            // handle previously written and non-replaceable objects    //处理以前写过的和不可替换的对象
             int h;
-            if ((obj = subs.lookup(obj)) == null) {
+            if ((obj = subs.lookup(obj)) == null) {//如果obj为null(只有当obj为null时才会返回null)
                 writeNull();
                 return;
             } else if (!unshared && (h = handles.lookup(obj)) != -1) {
@@ -1126,12 +1126,12 @@ public class ObjectOutputStream
 
             // check for replacement object
             Object orig = obj;
-            Class<?> cl = obj.getClass();
+            Class<?> cl = obj.getClass();//序列化对象对应的Class对象的详细信息
             ObjectStreamClass desc;
             for (;;) {
                 // REMIND: skip this check for strings/arrays?
                 Class<?> repCl;
-                desc = ObjectStreamClass.lookup(cl, true);
+                desc = ObjectStreamClass.lookup(cl, true);//获取序列化对象对应的Class对象详细信息
                 if (!desc.hasWriteReplaceMethod() ||
                     (obj = desc.invokeWriteReplace(obj)) == null ||
                     (repCl = obj.getClass()) == cl)
@@ -1141,16 +1141,16 @@ public class ObjectOutputStream
                 cl = repCl;
             }
             if (enableReplace) {
-                Object rep = replaceObject(obj);
+                Object rep = replaceObject(obj);//replaceObject用来替换这个对象进行序列化，默认实现为空，一般用于子类重写实现序列化的定制
                 if (rep != obj && rep != null) {
                     cl = rep.getClass();
-                    desc = ObjectStreamClass.lookup(cl, true);
+                    desc = ObjectStreamClass.lookup(cl, true);//重新查找对应的ObjectStreamClass
                 }
                 obj = rep;
             }
 
             // if object replaced, run through original checks a second time
-            if (obj != orig) {
+            if (obj != orig) {//如果对象被替换了(非ObjectOutputStream子类不会发生)
                 subs.assign(orig, obj);
                 if (obj == null) {
                     writeNull();
@@ -1167,16 +1167,16 @@ public class ObjectOutputStream
                 }
             }
 
-            // remaining cases
+            // remaining cases  //序列化对象类型为String、数组、枚举时，调用定制的写入方法
             if (obj instanceof String) {
                 writeString((String) obj, unshared);
             } else if (cl.isArray()) {
                 writeArray(obj, desc, unshared);
             } else if (obj instanceof Enum) {
                 writeEnum((Enum<?>) obj, desc, unshared);
-            } else if (obj instanceof Serializable) {
+            } else if (obj instanceof Serializable) {   //一般对象类型的写入(当然需要实现序列化接口)
                 writeOrdinaryObject(obj, desc, unshared);
-            } else {
+            } else {//如果没有实现序列化接口会抛出异常
                 if (extendedDebugInfo) {
                     throw new NotSerializableException(
                         cl.getName() + "\n" + debugInfoStack.toString());
@@ -1185,7 +1185,7 @@ public class ObjectOutputStream
                 }
             }
         } finally {
-            depth--;
+            depth--;//结束方法前将方法栈深减去1
             bout.setBlockDataMode(oldMode);
         }
     }
@@ -1421,15 +1421,15 @@ public class ObjectOutputStream
                 obj.getClass().getName() + "\", " + obj.toString() + ")");
         }
         try {
-            desc.checkSerialize();
+            desc.checkSerialize();//检查ObjectStreamClass对象
 
-            bout.writeByte(TC_OBJECT);
-            writeClassDesc(desc, false);
+            bout.writeByte(TC_OBJECT);//写入字节0x73
+            writeClassDesc(desc, false); //写入对应的Class对象的信息
             handles.assign(unshared ? null : obj);
             if (desc.isExternalizable() && !desc.isProxy()) {
                 writeExternalData((Externalizable) obj);
             } else {
-                writeSerialData(obj, desc);
+                writeSerialData(obj, desc); //写入这个对象变量信息及其父类的成员变量
             }
         } finally {
             if (extendedDebugInfo) {

@@ -19,6 +19,6 @@ public class MyAnnotation1 {
 }
 
 @Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 @interface MyAnnotation {
 }

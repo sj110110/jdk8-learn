@@ -63,8 +63,8 @@ final class WeakCache<K, P, V> {
         = new ConcurrentHashMap<>();
     private final ConcurrentMap<Supplier<V>, Boolean> reverseMap
         = new ConcurrentHashMap<>();
-    private final BiFunction<K, P, ?> subKeyFactory;
-    private final BiFunction<K, P, V> valueFactory;
+    private final BiFunction<K, P, ?> subKeyFactory;    //根据K和P获得sub-key的算法
+    private final BiFunction<K, P, V> valueFactory;     //根据K和P获得value的算法
 
     /**
      * Construct an instance of {@code WeakCache}
@@ -100,11 +100,11 @@ final class WeakCache<K, P, V> {
     public V get(K key, P parameter) {
         Objects.requireNonNull(parameter);
 
-        expungeStaleEntries();
+        expungeStaleEntries();//将被clear的key对应的值从map中删除
 
         Object cacheKey = CacheKey.valueOf(key, refQueue);
 
-        // lazily install the 2nd level valuesMap for the particular cacheKey
+        // lazily install the 2nd level valuesMap for the particular cacheKey   //为特定的cacheKey惰性加载第二级valuesMap
         ConcurrentMap<Object, Supplier<V>> valuesMap = map.get(cacheKey);
         if (valuesMap == null) {
             ConcurrentMap<Object, Supplier<V>> oldValuesMap
@@ -117,14 +117,14 @@ final class WeakCache<K, P, V> {
 
         // create subKey and retrieve the possible Supplier<V> stored by that
         // subKey from valuesMap
-        Object subKey = Objects.requireNonNull(subKeyFactory.apply(key, parameter));
+        Object subKey = Objects.requireNonNull(subKeyFactory.apply(key, parameter));//生成valuesMap的key对象
         Supplier<V> supplier = valuesMap.get(subKey);
         Factory factory = null;
 
         while (true) {
             if (supplier != null) {
                 // supplier might be a Factory or a CacheValue<V> instance
-                V value = supplier.get();
+                V value = supplier.get();//生成代理类对象
                 if (value != null) {
                     return value;
                 }
@@ -134,7 +134,7 @@ final class WeakCache<K, P, V> {
             // or a Factory that wasn't successful in installing the CacheValue)
 
             // lazily construct a Factory
-            if (factory == null) {
+            if (factory == null) {  //懒惰式创建工厂
                 factory = new Factory(key, parameter, subKey, valuesMap);
             }
 
@@ -187,7 +187,7 @@ final class WeakCache<K, P, V> {
     private void expungeStaleEntries() {
         CacheKey<K> cacheKey;
         while ((cacheKey = (CacheKey<K>)refQueue.poll()) != null) {
-            cacheKey.expungeFrom(map, reverseMap);
+            cacheKey.expungeFrom(map, reverseMap);  //
         }
     }
 
@@ -200,7 +200,7 @@ final class WeakCache<K, P, V> {
         private final K key;
         private final P parameter;
         private final Object subKey;
-        private final ConcurrentMap<Object, Supplier<V>> valuesMap;
+        private final ConcurrentMap<Object, Supplier<V>> valuesMap; //
 
         Factory(K key, P parameter, Object subKey,
                 ConcurrentMap<Object, Supplier<V>> valuesMap) {
@@ -213,7 +213,7 @@ final class WeakCache<K, P, V> {
         @Override
         public synchronized V get() { // serialize access
             // re-check
-            Supplier<V> supplier = valuesMap.get(subKey);
+            Supplier<V> supplier = valuesMap.get(subKey);   //获取创建对象的函数式接口Supplier
             if (supplier != this) {
                 // something changed while we were waiting:
                 // might be that we were replaced by a CacheValue
@@ -227,7 +227,7 @@ final class WeakCache<K, P, V> {
             // create new value
             V value = null;
             try {
-                value = Objects.requireNonNull(valueFactory.apply(key, parameter));
+                value = Objects.requireNonNull(valueFactory.apply(key, parameter));     //返回代理类对象
             } finally {
                 if (value == null) { // remove us on failure
                     valuesMap.remove(subKey, this);
@@ -237,13 +237,13 @@ final class WeakCache<K, P, V> {
             assert value != null;
 
             // wrap value with CacheValue (WeakReference)
-            CacheValue<V> cacheValue = new CacheValue<>(value);
+            CacheValue<V> cacheValue = new CacheValue<>(value);     //构建代理类缓存cacheValue
 
             // put into reverseMap
-            reverseMap.put(cacheValue, Boolean.TRUE);
+            reverseMap.put(cacheValue, Boolean.TRUE);//放入map中
 
             // try replacing us with CacheValue (this should always succeed)
-            if (!valuesMap.replace(subKey, this, cacheValue)) {
+            if (!valuesMap.replace(subKey, this, cacheValue)) {     //通过
                 throw new AssertionError("Should not reach here");
             }
 
@@ -335,7 +335,7 @@ final class WeakCache<K, P, V> {
                    // so we use a NULL_KEY singleton as cache key
                    ? NULL_KEY
                    // non-null key requires wrapping with a WeakReference
-                   : new CacheKey<>(key, refQueue);
+                   : new CacheKey<>(key, refQueue);     //当键为空时使用Object对象作为key，key不为空使用WeakReference包装
         }
 
         private final int hash;

@@ -232,19 +232,19 @@ public class DriverManager {
      * has been exceeded and has at least tried to cancel the
      * current database connection attempt
      */
-    @CallerSensitive
+    @CallerSensitive    //注意这个注解的作用：用来找到真正的调用者，被它标注的方法会被忽略，防止多重反射
     public static Connection getConnection(String url,
-        String user, String password) throws SQLException {
+        String user, String password) throws SQLException {//获取数据库连接
         java.util.Properties info = new java.util.Properties();
 
         if (user != null) {
             info.put("user", user);
         }
-        if (password != null) {
+        if (password != null) {//封装数据库连接的user和、password
             info.put("password", password);
         }
 
-        return (getConnection(url, info, Reflection.getCallerClass()));
+        return (getConnection(url, info, Reflection.getCallerClass()));//Reflection.getCallerClass获取调用者的Class对象
     }
 
     /**
@@ -331,7 +331,7 @@ public class DriverManager {
     public static synchronized void registerDriver(java.sql.Driver driver)
         throws SQLException {
 
-        registerDriver(driver, null);
+        registerDriver(driver, null);//注册driver对象到DriverManager
     }
 
     /**
@@ -355,7 +355,7 @@ public class DriverManager {
 
         /* Register the driver if it has not already been added to our list */
         if(driver != null) {
-            registeredDrivers.addIfAbsent(new DriverInfo(driver, da));
+            registeredDrivers.addIfAbsent(new DriverInfo(driver, da));//如果驱动尚未注册，那么将它添加到registeredDrivers并发链表中CopyOnWriteArrayList
         } else {
             // This is for compatibility with the original DriverManager
             throw new NullPointerException();
@@ -548,12 +548,12 @@ public class DriverManager {
         return isDriverAllowed(driver, callerCL);
     }
 
-    private static boolean isDriverAllowed(Driver driver, ClassLoader classLoader) {
+    private static boolean isDriverAllowed(Driver driver, ClassLoader classLoader) {//判断是否有权限加载驱动
         boolean result = false;
         if(driver != null) {
             Class<?> aClass = null;
             try {
-                aClass =  Class.forName(driver.getClass().getName(), true, classLoader);
+                aClass =  Class.forName(driver.getClass().getName(), true, classLoader);//获取驱动类的Class对象，通过对应的类加载器进行加载初始化
             } catch (Exception ex) {
                 result = false;
             }
@@ -630,18 +630,18 @@ public class DriverManager {
 
     //  Worker method called by the public getConnection() methods.
     private static Connection getConnection(
-        String url, java.util.Properties info, Class<?> caller) throws SQLException {
+        String url, java.util.Properties info, Class<?> caller) throws SQLException {//调用者：class test.java.jdbc.JdbcTest
         /*
          * When callerCl is null, we should check the application's
          * (which is invoking this class indirectly)
          * classloader, so that the JDBC driver class outside rt.jar
          * can be loaded from here.
          */
-        ClassLoader callerCL = caller != null ? caller.getClassLoader() : null;
+        ClassLoader callerCL = caller != null ? caller.getClassLoader() : null;//获取调用者的类加载器类sun.misc.Launcher$AppClassLoader@18b4aac2
         synchronized(DriverManager.class) {
             // synchronize loading of the correct classloader.
             if (callerCL == null) {
-                callerCL = Thread.currentThread().getContextClassLoader();
+                callerCL = Thread.currentThread().getContextClassLoader();//若没有则使用线程上下文类加载器(SPI机制时，会打破双亲委派机制)
             }
         }
 
@@ -655,10 +655,10 @@ public class DriverManager {
         // Remember the first exception that gets raised so we can reraise it.
         SQLException reason = null;
 
-        for(DriverInfo aDriver : registeredDrivers) {
+        for(DriverInfo aDriver : registeredDrivers) {//遍历驱动注册表（并发链表）
             // If the caller does not have permission to load the driver then
             // skip it.
-            if(isDriverAllowed(aDriver.driver, callerCL)) {
+            if(isDriverAllowed(aDriver.driver, callerCL)) {//如果调用者没有权限去加载这个驱动，则跳过
                 try {
                     println("    trying " + aDriver.driver.getClass().getName());
                     Connection con = aDriver.driver.connect(url, info);

@@ -1,9 +1,7 @@
 package test.java.lang.annotation;
 
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 /**
  * @author sj

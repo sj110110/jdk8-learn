@@ -59,7 +59,7 @@ public abstract class Enum<E extends Enum<E>>
      * Most programmers should use the {@link #toString} method rather than
      * accessing this field.
      */
-    private final String name;
+    private final String name;//name就是我们定义的枚举实例的名称本身，例如AA、BB
 
     /**
      * Returns the name of this enum constant, exactly as declared in its
@@ -86,7 +86,7 @@ public abstract class Enum<E extends Enum<E>>
      * for use by sophisticated enum-based data structures, such as
      * {@link java.util.EnumSet} and {@link java.util.EnumMap}.
      */
-    private final int ordinal;
+    private final int ordinal;//这个字段标明我们的枚举类中声明的实例顺序，第一个声明就是0，后面依次递增
 
     /**
      * Returns the ordinal of this enumeration constant (its position
@@ -172,7 +172,7 @@ public abstract class Enum<E extends Enum<E>>
      * same enum type.  The natural order implemented by this
      * method is the order in which the constants are declared.
      */
-    public final int compareTo(E o) {
+    public final int compareTo(E o) {//枚举实例排序，根据ordinal大小
         Enum<?> other = (Enum<?>)o;
         Enum<E> self = this;
         if (self.getClass() != other.getClass() && // optimization
@@ -246,7 +246,7 @@ public abstract class Enum<E extends Enum<E>>
     /**
      * prevent default deserialization
      */
-    private void readObject(ObjectInputStream in) throws IOException,
+    private void readObject(ObjectInputStream in) throws IOException,//通过将readObject和readObjectNoData方法定义为private同时直接抛出异常，来保证Enum枚举类的不可变性
         ClassNotFoundException {
         throw new InvalidObjectException("can't deserialize enum");
     }

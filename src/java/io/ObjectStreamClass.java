@@ -322,22 +322,22 @@ public class ObjectStreamClass implements Serializable {
         if (!(all || Serializable.class.isAssignableFrom(cl))) {
             return null;
         }
-        processQueue(Caches.localDescsQueue, Caches.localDescs);
+        processQueue(Caches.localDescsQueue, Caches.localDescs);//处理已经被GC回收的Class对象对应的ObjectStreamClass对象
         WeakClassKey key = new WeakClassKey(cl, Caches.localDescsQueue);
-        Reference<?> ref = Caches.localDescs.get(key);
+        Reference<?> ref = Caches.localDescs.get(key);//先尝试从缓存中找到cl对应的ObjectStreamClass对象
         Object entry = null;
         if (ref != null) {
-            entry = ref.get();
+            entry = ref.get();//如果存在则取出
         }
         EntryFuture future = null;
-        if (entry == null) {
+        if (entry == null) {//如果不存在则创建一个Future作为后续生成ObjectStreamClass实例的容器
             EntryFuture newEntry = new EntryFuture();
             Reference<?> newRef = new SoftReference<>(newEntry);
             do {
-                if (ref != null) {
+                if (ref != null) {//移除旧的不引用任何对象的Reference
                     Caches.localDescs.remove(key, ref);
                 }
-                ref = Caches.localDescs.putIfAbsent(key, newRef);
+                ref = Caches.localDescs.putIfAbsent(key, newRef);//新建cl对应的引用，此时引用的只是一个空Future
                 if (ref != null) {
                     entry = ref.get();
                 }
@@ -348,7 +348,7 @@ public class ObjectStreamClass implements Serializable {
         }
 
         if (entry instanceof ObjectStreamClass) {  // check common case first
-            return (ObjectStreamClass) entry;
+            return (ObjectStreamClass) entry; //取得缓存中的直接返回
         }
         if (entry instanceof EntryFuture) {
             future = (EntryFuture) entry;
@@ -371,7 +371,7 @@ public class ObjectStreamClass implements Serializable {
                 entry = th;
             }
             if (future.set(entry)) {
-                Caches.localDescs.put(key, new SoftReference<Object>(entry));
+                Caches.localDescs.put(key, new SoftReference<Object>(entry));//更新Future为ObjectStreamClass
             } else {
                 // nested lookup call already set future
                 entry = future.get();
@@ -458,32 +458,32 @@ public class ObjectStreamClass implements Serializable {
      */
     private ObjectStreamClass(final Class<?> cl) {
         this.cl = cl;
-        name = cl.getName();
-        isProxy = Proxy.isProxyClass(cl);
-        isEnum = Enum.class.isAssignableFrom(cl);
-        serializable = Serializable.class.isAssignableFrom(cl);
-        externalizable = Externalizable.class.isAssignableFrom(cl);
+        name = cl.getName();//类名
+        isProxy = Proxy.isProxyClass(cl);//是否是JDK动态代理产生的对象类
+        isEnum = Enum.class.isAssignableFrom(cl);//是否枚举累
+        serializable = Serializable.class.isAssignableFrom(cl);//是否实现了序列化接口
+        externalizable = Externalizable.class.isAssignableFrom(cl);//是否实现了Externalozable接口
 
         Class<?> superCl = cl.getSuperclass();
-        superDesc = (superCl != null) ? lookup(superCl, false) : null;
-        localDesc = this;
+        superDesc = (superCl != null) ? lookup(superCl, false) : null;//记录父类的描述信息
+        localDesc = this;//保存本实例引用
 
-        if (serializable) {
+        if (serializable) {//实现了序列化接口的
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
                 public Void run() {
                     if (isEnum) {
-                        suid = Long.valueOf(0);
-                        fields = NO_FIELDS;
+                        suid = Long.valueOf(0);//枚举类固定serialVersionUID为0
+                        fields = NO_FIELDS;//枚举字段设为空
                         return null;
                     }
                     if (cl.isArray()) {
-                        fields = NO_FIELDS;
+                        fields = NO_FIELDS;//数组.class的类描述字段设为空
                         return null;
                     }
 
-                    suid = getDeclaredSUID(cl);
+                    suid = getDeclaredSUID(cl);//若不是枚举和数组读取类的静态final的长整型字段serialVersionUID，若没明确指定该字段值则通过getSerialVersionUID()方法分配一个值
                     try {
-                        fields = getSerialFields(cl);
+                        fields = getSerialFields(cl);//获取类中定义的私有静态final的ObjectStreamField数组serialPersistentFields，它指定了需要序列化的字段,如果没有指定则默认使用非静态瞬时的成员字段
                         computeFieldOffsets();
                     } catch (InvalidClassException e) {
                         serializeEx = deserializeEx =

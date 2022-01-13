@@ -337,7 +337,7 @@ public final class Class<T> implements java.io.Serializable,
             // Reflective call to get caller class is only needed if a security manager
             // is present.  Avoid the overhead of making this call otherwise.
             caller = Reflection.getCallerClass();   //获取调用类
-            if (sun.misc.VM.isSystemDomainLoader(loader)) { //判断传入的类加载器是否为空
+            if (sun.misc.VM.isSystemDomainLoader(loader)) { //校验类加载器
                 ClassLoader ccl = ClassLoader.getClassLoader(caller);   //获取调用类的类加载器
                 if (!sun.misc.VM.isSystemDomainLoader(ccl)) {   //如果没有获取到
                     sm.checkPermission(
@@ -3304,11 +3304,11 @@ public final class Class<T> implements java.io.Serializable,
      * identical to getEnumConstants except that the result is
      * uncloned, cached, and shared by all callers.
      */
-    T[] getEnumConstantsShared() {
+    T[] getEnumConstantsShared() {//获取该class的所有枚举常量值
         if (enumConstants == null) {
             if (!isEnum()) return null;
             try {
-                final Method values = getMethod("values");
+                final Method values = getMethod("values");//通过反射调用调用者自身的values方法获取
                 java.security.AccessController.doPrivileged(
                     new java.security.PrivilegedAction<Void>() {
                         public Void run() {
@@ -3336,7 +3336,7 @@ public final class Class<T> implements java.io.Serializable,
      * efficiently.  Note that the map is returned by this method is
      * created lazily on first use.  Typically it won't ever get created.
      */
-    Map<String, T> enumConstantDirectory() {
+    Map<String, T> enumConstantDirectory() {//根据枚举实例name，获取
         if (enumConstantDirectory == null) {
             T[] universe = getEnumConstantsShared();
             if (universe == null)

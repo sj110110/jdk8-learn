@@ -7,6 +7,7 @@ package test.java.lang.annotation;
  * @date 2021/3/8 18:59
  */
 public class MyMethodTest {
+
     public static void main(String[] args){
         System.out.println("main start .");
         method();
